@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "source": "AGRECT System design - Open field & orchards, pp. 17-18, Test vectors",
+  "rules": "All numbers are strings parsed with decimal.Decimal. Round the result with ROUND_HALF_UP to the number of decimal places in the expected string, then compare for equality.",
+  "weather": [
+    {"id": "weather.vpd", "input": {"temp_c": "25", "rh_pct": "50"}, "expected": {"es_kpa": "3.168", "vpd_kpa": "1.584"}},
+    {"id": "weather.gdd_average", "input": {"tmax_c": "30", "tmin_c": "14", "base_c": "10"}, "expected": {"gdd_cd": "12.0"}},
+    {"id": "weather.gdd_average_upper", "input": {"tmax_c": "30", "tmin_c": "14", "base_c": "10", "upper_c": "28"}, "expected": {"gdd_cd": "11.0"}}
+  ],
+  "soilwater": [
+    {"id": "soilwater.water_store", "input": {"theta_fc": "0.30", "theta_wp": "0.15", "root_depth_m": "1.0", "p": "0.5"}, "expected": {"taw_mm": "150", "raw_mm": "75"}},
+    {"id": "soilwater.daily_balance", "input": {"dr_prev_mm": "40", "rain_mm": "5", "irrigation_soil_mm": "10", "etc_mm": "6"}, "expected": {"dr_mm": "31"}},
+    {"id": "soilwater.gross_irrigation", "input": {"etc_mm": "7", "efficiency": "0.7"}, "expected": {"gross_mm": "10"}},
+    {"id": "soilwater.run_time_volume", "input": {"q_m3h": "40", "duration_min": "90"}, "expected": {"volume_m3": "60"}},
+    {"id": "soilwater.runoff", "input": {"rate_mm_h": "12", "infiltration_mm_h": "8", "duration_min": "60", "efficiency": "1"}, "expected": {"soil_mm": "8", "runoff_mm": "4"}}
+  ],
+  "registry": [
+    {"id": "registry.density", "input": {"row_spacing_m": "3.00", "tree_spacing_m": "1.50"}, "expected": {"trees_per_ha": "2222"}},
+    {"id": "registry.round_down", "input": {"raw_trees_per_ha": "1653.6"}, "expected": {"trees_per_ha": "1653"}},
+    {"id": "registry.drip_flow", "input": {"row_spacing_m": "4.00", "laterals_per_row": "2", "emitter_spacing_m": "0.75", "emitter_flow_lph": "4.0", "net_area_ha": "1"}, "expected": {"q_ha_m3h": "26.67", "rate_mm_h": "2.67"}}
+  ],
+  "records": [
+    {"id": "records.harvest_crates", "input": {"quantity": "250", "unit": "crate", "unit_weight_kg": "18", "area_ha": "1.50"}, "expected": {"kg": "4500", "kg_ha": "3000"}},
+    {"id": "records.product_concentration", "input": {"rate_ml_per_100l": "150", "water_l_ha": "1000", "area_ha": "2.00"}, "expected": {"total_l": "3.0"}}
+  ]
+}

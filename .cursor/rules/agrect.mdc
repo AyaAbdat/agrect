@@ -1,0 +1,45 @@
+---
+description: AGRECT MVP — project rules for every task
+alwaysApply: true
+---
+
+# AGRECT — rules for the developer agent
+
+You are the developer. A lead engineer writes your tasks. Do **exactly** the task given: no extra features, no refactors outside its scope.
+
+## Before you start any task
+1. Read `docs/PROGRESS.md` and every file named in the task's READ FIRST.
+2. If anything in the task is ambiguous or conflicts with these rules, **stop and ask**. Don't guess.
+
+## Stack (do not add or swap libraries unless the task says so)
+- Backend: Python 3.12 (uv), FastAPI, Pydantic v2, SQLAlchemy 2.0 typed ORM, GeoAlchemy2, Alembic, psycopg 3, PostGIS, APScheduler, httpx, pytest, ruff.
+- Frontend: React 18, TypeScript strict, Vite, TanStack Query, React Router, react-hook-form + zod, Tailwind + shadcn/ui, react-i18next, Leaflet + react-leaflet + leaflet-geoman, Recharts, vite-plugin-pwa.
+- Dev OS is **Windows**: give every command in **PowerShell** syntax, one per line, never `&&`. Postgres runs in Docker; the API and web run natively (`uv run`, `npm run`).
+
+## Code rules
+- **Calculations:** pure functions in `backend/app/modules/<module>/calc.py` only. No DB, no I/O. Use `decimal.Decimal` (never float) for agronomic or hydraulic values. Each function has a docstring giving the formula and its source. Tests read `shared/test_vectors.json`. **Never edit that file or weaken a test to get green.**
+- **Naming:** units in names (`flow_m3h`, `depth_mm`, `area_ha`, `temp_c`). UUID primary keys. `timestamptz` in UTC. Farm-local days use the farm's IANA timezone through `zoneinfo`.
+- **Every derived value carries a source label:** `measured | estimated | calculated | entered`. Derived rows store `inputs_hash`.
+- **Optional fields never block saving.** Return field-level error codes (e.g. `planting.spacing_required`), never English sentences.
+- **Scoping:** every farm-owned table has `farm_id`; every endpoint uses the `get_current_farm` dependency. Never query farm-owned data without it.
+- **Schema changes:** only through a new Alembic migration (autogenerate, then review it). Never edit a migration that has already been applied.
+- **API:** REST under `/v1`, matching the paths in the system design. Pydantic schemas for every request and response. No stack traces in responses.
+- **Frontend:** no hard-coded user-facing text. Add every key to `fr.json`, `ar.json` and `en.json` together. Use logical Tailwind classes (`ms-`, `me-`, `ps-`, `pe-`, `start-`, `end-`) so Arabic RTL works. Every screen has loading, empty and error states. Show the source label next to calculated values.
+- **Figma:** for UI tasks, match the attached Figma frame (layout, fields, order, labels) as closely as the stack allows. Don't invent screens or fields that aren't in the frame or the task.
+- **Agronomic data:** never invent numbers. Every catalogue value in `data/catalog/` has a `citation`; if one isn't available, use `null`.
+- **Secrets:** read from environment variables only; update `.env.example` when you add one. Never write real secrets to any file.
+- Keep functions small and typed. No dead code, no commented-out code, no TODOs without a task number.
+
+## Forbidden without explicit instruction
+- `git commit`, `git push`, `git reset`, `git clean`, or any history rewrite (the human commits after review)
+- Deleting or renaming files outside the task scope
+- `docker system prune`, dropping or recreating the database, deleting volumes
+- Installing global tools, changing Python or Node versions
+- Changing `shared/test_vectors.json`, `.cursor/rules/`, or applied migrations
+
+## Finish every task like this
+1. Run `./scripts/check.ps1` and make sure it ends with `ALL CHECKS PASSED`. If it fails, fix it within the task's scope. If you can't, stop and report.
+2. Reply with:
+   - **Files changed** (created / modified / deleted)
+   - **Commands run** and their results (pass/fail counts)
+   - **Uncertain or skipped** items, stated plainly
