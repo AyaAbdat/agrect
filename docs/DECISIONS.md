@@ -17,3 +17,10 @@
 | D-013 | 2026-11-04 | psycopg[binary] | no local libpq on Windows | - |
 | D-014 | 2026-11-04 | Desktop Figma frames (D-xx, docs/agrect-desktop.md) supersede the PDF's mobile frame IDs | latest design | - |
 | D-015 | 2026-11-04 | T01 split into T01a (backend/infra) and T01b (frontend shell) | 45-minute task limit | - |
+| D-016 | 2026-11-04 | Language switcher in the avatar menu and on the login card | the design has no language control; the jury must switch FR/AR/EN | - |
+| D-017 | 2026-11-04 | Fonts: Inter + Noto Sans Arabic via Google Fonts, system-ui fallback | Inter has no Arabic glyphs | self-host fonts in T19 (PWA) |
+| D-018 | 2026-11-04 | Tailwind v4 (@tailwindcss/vite) and React Router v7 (`react-router` package, declarative mode) on React 18 | current versions compatible with the locked stack | - |
+| D-019 | 2026-11-04 | Drawer opens at the inline end (right in FR/EN, left in AR) | RTL mirroring | - |
+| D-020 | 2026-11-04 | shadcn/ui on the Base UI ("nova") preset instead of Radix | `shadcn init -d` now scaffolds Next.js; this preset keeps Vite | - |
+| D-021 | 2026-11-04 | react-router pinned to v7 | v8 requires React 19; React 18 is locked | upgrade with React 19 later |
+| D-022 | 2026-11-04 | TypeScript pinned to 5.9; ESLint (flat config, typescript-eslint) instead of oxlint | TS 7 drops baseUrl and is unsupported by typescript-eslint; ESLint is the locked linter | revisit when typescript-eslint supports TS 7 |

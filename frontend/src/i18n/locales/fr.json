@@ -1,0 +1,101 @@
+{
+  "app": {
+    "name": "AGRECT",
+    "mark": "A",
+    "workspace": "Plein champ et vergers"
+  },
+  "nav": {
+    "farm": "Exploitation",
+    "today": "Aujourd'hui",
+    "blocks": "Blocs",
+    "station": "Station de fertigation",
+    "seasonTimeline": "Calendrier de saison",
+    "scores": "Scores",
+    "compare": "Comparer",
+    "dashboards": "Tableaux de bord",
+    "weekReview": "Revue de la semaine",
+    "harvest": "Récolte",
+    "block": "Bloc",
+    "noBlocks": "Aucun bloc pour le moment",
+    "overview": "Vue d'ensemble",
+    "weather": "Météo",
+    "soilWater": "Sol et eau",
+    "stages": "Stades de croissance",
+    "pests": "Ravageurs",
+    "maps": "Cartes",
+    "journal": "Journal",
+    "setup": "Configuration",
+    "plansAndTeam": "Plans et équipe",
+    "plans": "Plans",
+    "team": "Équipe",
+    "settings": "Paramètres"
+  },
+  "top": {
+    "allBlocks": "Tous les blocs",
+    "outside": "Extérieur",
+    "rh": "HR",
+    "wind": "Vent",
+    "radiation": "Rayonnement",
+    "capture": "+ Saisir",
+    "ask": "Demander à AGRECT",
+    "alerts": "Alertes"
+  },
+  "menu": {
+    "language": "Langue",
+    "fr": "Français",
+    "ar": "العربية",
+    "en": "English",
+    "logout": "Se déconnecter"
+  },
+  "langShort": {
+    "fr": "FR",
+    "ar": "ع",
+    "en": "EN"
+  },
+  "login": {
+    "title": "Connexion",
+    "subtitle": "Votre exploitation, vos blocs et vos serres au même endroit.",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "submit": "Connexion",
+    "forgot": "Mot de passe oublié ?",
+    "error": "Saisissez votre e-mail et votre mot de passe."
+  },
+  "placeholder": {
+    "mvpTitle": "Bientôt disponible",
+    "mvpText": "Cet écran est en cours de réalisation.",
+    "phase2Title": "Prévu pour la phase 2",
+    "phase2Text": "Cette fonction fait partie de la conception complète d'AGRECT. Elle sera développée après le MVP."
+  },
+  "drawer": {
+    "close": "Fermer",
+    "captureTitle": "Saisie rapide"
+  },
+  "settings": {
+    "crumb": "Paramètres",
+    "title": "Paramètres",
+    "sub": "Personnel, entreprise et exploitation",
+    "personal": "Personnel",
+    "company": "Entreprise",
+    "farm": "Exploitation",
+    "profile": "Profil",
+    "units": "Unités",
+    "ask": "Demander à AGRECT",
+    "team": "Équipe",
+    "inventories": "Inventaires",
+    "askKnowledge": "Connaissances Ask",
+    "workspace": "Espace de travail",
+    "farmDetails": "Détails de l'exploitation",
+    "blocks": "Blocs",
+    "workspaceLead": "Choisissez la partie de l'exploitation qu'AGRECT affiche. AGRECT s'ouvre sur le dernier espace de travail utilisé.",
+    "openFieldText": "Blocs, météo, sol et eau, stades de croissance.",
+    "current": "Actuel",
+    "greenhouse": "Serre",
+    "greenhouseText": "Chapelles, climat, irrigation, plantes, plans et équipe.",
+    "phase2": "Phase 2",
+    "footnote": "Seuls les espaces de travail utilisés par votre exploitation sont affichés. Une exploitation à un seul espace ne voit jamais ce choix."
+  },
+  "common": {
+    "missing": "—"
+  }
+}

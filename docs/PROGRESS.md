@@ -2,15 +2,19 @@
 
 ## Current state
 
-T01a in review
+T01b in review
 
 ## Done
 
+- T01a repo skeleton, dev PostGIS 5433, /v1/health, Alembic + PostGIS, test vectors, check.ps1
+
 ## Next
 
-T01b frontend shell
+T02 deploy skeleton (needs VPS IP), else T03 auth + farm
 
 ## Known issues
+
+- Starlette TestClient httpx deprecation warning (harmless)
 
 ## Acceptance checklist (MUST)
 

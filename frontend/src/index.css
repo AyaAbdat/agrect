@@ -1,0 +1,158 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-pri: #1b4332;
+  --color-sec: #2d6a4f;
+  --color-grn: #40916c;
+  --color-mint: #d8f3dc;
+  --color-hl: #d5e5d9;
+  --color-text: #111827;
+  --color-mut: #6b7280;
+  --color-line: #e5e7eb;
+  --color-bg: #f4f6f3;
+  --color-amb: #b45309;
+  --color-red: #dc2626;
+}
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: Inter, system-ui;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: #f4f6f3;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+  --primary: #1b4332;
+  --primary-foreground: #ffffff;
+  --secondary: #2d6a4f;
+  --secondary-foreground: #ffffff;
+  --muted: #f4f6f3;
+  --muted-foreground: #6b7280;
+  --accent: #d8f3dc;
+  --accent-foreground: #1b4332;
+  --destructive: #dc2626;
+  --border: #e5e7eb;
+  --input: #c7d2c9;
+  --ring: #40916c;
+  --chart-1: #1b4332;
+  --chart-2: #2d6a4f;
+  --chart-3: #40916c;
+  --chart-4: #d8f3dc;
+  --chart-5: #b45309;
+  --radius: 0.75rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #111827;
+  --sidebar-primary: #1b4332;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #d8f3dc;
+  --sidebar-accent-foreground: #1b4332;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #40916c;
+}
+
+.dark {
+  --background: #111827;
+  --foreground: #f4f6f3;
+  --card: #1b4332;
+  --card-foreground: #f4f6f3;
+  --popover: #1b4332;
+  --popover-foreground: #f4f6f3;
+  --primary: #d8f3dc;
+  --primary-foreground: #1b4332;
+  --secondary: #2d6a4f;
+  --secondary-foreground: #ffffff;
+  --muted: #2d6a4f;
+  --muted-foreground: #d5e5d9;
+  --accent: #2d6a4f;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --border: #2d6a4f;
+  --input: #2d6a4f;
+  --ring: #40916c;
+  --sidebar: #1b4332;
+  --sidebar-foreground: #f4f6f3;
+  --sidebar-primary: #d8f3dc;
+  --sidebar-primary-foreground: #1b4332;
+  --sidebar-accent: #2d6a4f;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #2d6a4f;
+  --sidebar-ring: #40916c;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+html {
+  color-scheme: light;
+  font-family: Inter, system-ui;
+}
+
+html[dir="rtl"] {
+  font-family: "Noto Sans Arabic", Inter, system-ui;
+}
+
+body {
+  margin: 0;
+  font-size: 13px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}

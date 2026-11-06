@@ -25,6 +25,7 @@ Invoke-Step 'pytest' $backend { uv run pytest -q }
 
 $frontend = Join-Path $root 'frontend'
 if (Test-Path (Join-Path $frontend 'package.json')) {
+    Invoke-Step 'i18n keys' $frontend { npm run check:i18n }
     Invoke-Step 'tsc' $frontend { npm run typecheck }
     Invoke-Step 'eslint' $frontend { npm run lint }
     Invoke-Step 'vite build' $frontend { npm run build }

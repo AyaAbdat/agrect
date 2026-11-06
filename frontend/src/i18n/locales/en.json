@@ -1,0 +1,101 @@
+{
+  "app": {
+    "name": "AGRECT",
+    "mark": "A",
+    "workspace": "Open field & orchards"
+  },
+  "nav": {
+    "farm": "Farm",
+    "today": "Today",
+    "blocks": "Blocks",
+    "station": "Fertigation station",
+    "seasonTimeline": "Season timeline",
+    "scores": "Scores",
+    "compare": "Compare",
+    "dashboards": "Dashboards",
+    "weekReview": "Week review",
+    "harvest": "Harvest",
+    "block": "Block",
+    "noBlocks": "No blocks yet",
+    "overview": "Overview",
+    "weather": "Weather",
+    "soilWater": "Soil and water",
+    "stages": "Growth stages",
+    "pests": "Pests",
+    "maps": "Maps",
+    "journal": "Journal",
+    "setup": "Setup",
+    "plansAndTeam": "Plans and team",
+    "plans": "Plans",
+    "team": "Team",
+    "settings": "Settings"
+  },
+  "top": {
+    "allBlocks": "All blocks",
+    "outside": "Outside",
+    "rh": "RH",
+    "wind": "Wind",
+    "radiation": "Radiation",
+    "capture": "+ Capture",
+    "ask": "Ask AGRECT",
+    "alerts": "Alerts"
+  },
+  "menu": {
+    "language": "Language",
+    "fr": "Français",
+    "ar": "العربية",
+    "en": "English",
+    "logout": "Log out"
+  },
+  "langShort": {
+    "fr": "FR",
+    "ar": "ع",
+    "en": "EN"
+  },
+  "login": {
+    "title": "Log in",
+    "subtitle": "Your farm, blocks and houses in one place.",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Log in",
+    "forgot": "Forgot password?",
+    "error": "Enter your email and password."
+  },
+  "placeholder": {
+    "mvpTitle": "Coming soon",
+    "mvpText": "This screen is being built.",
+    "phase2Title": "Coming in phase 2",
+    "phase2Text": "This feature is part of the full AGRECT design. It will be built after the MVP."
+  },
+  "drawer": {
+    "close": "Close",
+    "captureTitle": "Quick capture"
+  },
+  "settings": {
+    "crumb": "Settings",
+    "title": "Settings",
+    "sub": "Personal, company and farm",
+    "personal": "Personal",
+    "company": "Company",
+    "farm": "Farm",
+    "profile": "Profile",
+    "units": "Units",
+    "ask": "Ask AGRECT",
+    "team": "Team",
+    "inventories": "Inventories",
+    "askKnowledge": "Ask knowledge",
+    "workspace": "Workspace",
+    "farmDetails": "Farm details",
+    "blocks": "Blocks",
+    "workspaceLead": "Choose which part of the farm AGRECT shows. AGRECT opens in the last workspace you used.",
+    "openFieldText": "Blocks, weather, soil and water, growth stages.",
+    "current": "Current",
+    "greenhouse": "Greenhouse",
+    "greenhouseText": "Houses, climate, irrigation, plants, plans and team.",
+    "phase2": "Phase 2",
+    "footnote": "Only workspaces your farm uses are shown. A farm with one workspace never sees this choice."
+  },
+  "common": {
+    "missing": "—"
+  }
+}
