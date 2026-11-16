@@ -56,3 +56,5 @@
 | D-052 | 2026-11-16 | Soil % mode stored but theta not computed until Saxton & Rawls (2006) is implemented and checked | scientific rigor | T12c |
 | D-053 | 2026-11-16 | Balance starts at Dr = 0 on soil.full_on, else on the first weather day (flagged) | no soil sensor in MVP | sensor reset later |
 | D-054 | 2026-11-16 | irrigation-today returns both "refill" (Dr + ETc) and "maintain" (ETc) and recommends refill when Dr >= RAW | PDF "gross = ETc (or Dr) / E" | - |
+| D-055 | 2026-11-16 | Caddy automatic HTTPS for app.agrect.com with 13.140.215.136.sslip.io as a fallback address | real domain + no-DNS fallback | - |
+| D-056 | 2026-11-16 | Migrations and the catalogue loader run at api start (idempotent) | one-command deploy | - |

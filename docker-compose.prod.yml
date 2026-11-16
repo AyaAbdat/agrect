@@ -1,0 +1,48 @@
+name: agrect-prod
+# .env.prod is optional so images build before that file exists.
+# scripts/deploy.sh refuses to start without it.
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    env_file:
+      - path: .env.prod
+        required: false
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - path: .env.prod
+        required: false
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    env_file:
+      - path: .env.prod
+        required: false
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+    restart: unless-stopped
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

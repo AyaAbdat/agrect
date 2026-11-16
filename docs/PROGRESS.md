@@ -2,7 +2,7 @@
 
 ## Current state
 
-T14b in review
+T02a in review
 
 ## Done
 
@@ -27,7 +27,7 @@ T14b in review
 
 ## Next
 
-T19 PWA + code split
+T02b server go-live
 
 ## Known issues
 
