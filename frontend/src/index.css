@@ -156,3 +156,27 @@ body,
 #root {
   height: 100%;
 }
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  font-family: inherit;
+  background: #d5e5d9;
+  z-index: 0;
+}
+
+.leaflet-container img {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.leaflet-tooltip.block-name-tip {
+  border: 1px solid #c9d3c7;
+  border-radius: 999px;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.leaflet-tooltip.block-name-tip::before {
+  display: none;
+}

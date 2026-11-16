@@ -24,3 +24,35 @@
 | D-020 | 2026-11-04 | shadcn/ui on the Base UI ("nova") preset instead of Radix | `shadcn init -d` now scaffolds Next.js; this preset keeps Vite | - |
 | D-021 | 2026-11-04 | react-router pinned to v7 | v8 requires React 19; React 18 is locked | upgrade with React 19 later |
 | D-022 | 2026-11-04 | TypeScript pinned to 5.9; ESLint (flat config, typescript-eslint) instead of oxlint | TS 7 drops baseUrl and is unsupported by typescript-eslint; ESLint is the locked linter | revisit when typescript-eslint supports TS 7 |
+| D-023 | 2026-11-06 | Deadline moved to Tue 10 Nov 2026 (jury time TBC); T02 deploy deferred until server SSH access is fixed (reinstall with SSH key) | VPS root password lost | - |
+| D-024 | 2026-11-06 | One owner per farm in the MVP (farm.owner_user_id); get_current_farm returns 404 for other farms | single "owner" role, no data leak | farm_member table with roles later |
+| D-025 | 2026-11-06 | Seed lives in backend/app/seed.py (python -m app.seed); scripts/seed_demo.py will wrap it in T19 | import path simplicity | - |
+| D-026 | 2026-11-06 | Tests use a separate database agrect_test created by conftest | dev data stays intact | - |
+| D-027 | 2026-11-06 | Decimal values travel as JSON strings ("35.62994"); the frontend parses them only for display | exact decimals end to end | - |
+| D-028 | 2026-11-06 | JWT stored in localStorage (agrect.token); 401 clears it and returns to /login | simple MVP auth, one role | httpOnly cookie + refresh token later |
+| D-029 | 2026-11-06 | API refuses to start with JWT_SECRET shorter than 32 characters; login runs a dummy hash for unknown emails | security baseline | - |
+| D-030 | 2026-11-11 | Deadline moved to Mon 16 Nov 2026 | jury rescheduled | - |
+| D-031 | 2026-11-11 | Catalogue names live in the DB in fr/ar/en columns (data), not in the UI locale files | crops can be added without code changes | - |
+| D-032 | 2026-11-11 | Soil theta_FC/theta_WP per class = midpoint of the FAO-56 Table 19 range; classes absent from Table 19 are null (Saxton & Rawls by % in T12) | cited values only | - |
+| D-033 | 2026-11-11 | pyyaml added for catalogue files | YAML is the catalogue format in the plan | - |
+| D-034 | 2026-11-11 | Registry calcs keep full Decimal precision; rounding happens only in API response schemas (trees floor, 2 dp flows/rates, 4 dp areas) | no rounding drift | - |
+| D-035 | 2026-11-11 | Row bearing stored in [0, 180) because rows have no direction | 0 = N–S | - |
+| D-036 | 2026-11-11 | Optimistic locking with If-Match/ETag on every write to an existing record; reason required after completion | PDF API rules | - |
+| D-037 | 2026-11-14 | Scope cut for the Mon 16 Nov jury: growth-stage predictions (T15–T17), Saxton & Rawls % mode, prediction ranges, chill portions, fertigation station, and settings beyond Workspace are phase 2 | time | build after the jury in plan order |
+| D-038 | 2026-11-14 | Every registry sub-entity write bumps the parent block version (one ETag per block) | one lock for the wizard | - |
+| D-039 | 2026-11-14 | Satellite basemap = Esri World Imagery for the MVP demo, with attribution | free, good imagery for drawing blocks | check the commercial licence before launch (PDF open decision) |
+| D-040 | 2026-11-14 | react-leaflet pinned to v4 | v5 requires React 19 | upgrade with React 19 |
+| D-041 | 2026-11-14 | Wizard crop chips come from the catalogue (table grape, apple, olive, wheat, barley), not the Figma list (pear, nectarine) | PDF/catalogue wins over the design | - |
+| D-042 | 2026-11-14 | Geometry preview through POST /v1/calc/registry/geometry (PostGIS), never computed in the browser | one implementation | - |
+| D-043 | 2026-11-15 | Rows in the block are entered, not calculated from the outline (Figma shows Calculated) | time; map split at row is phase 2 | compute from outline width ÷ row spacing later |
+| D-044 | 2026-11-15 | Scope cut on 15 Nov: soil profile, water balance, irrigation log and "irrigate today" (T12–T14) move to phase 2 unless time remains after T18 | jury on Mon 16 Nov | first module after the jury |
+| D-045 | 2026-11-15 | No scheduler tonight: weather refreshes on read when older than 60 min; APScheduler jobs later | time | add jobs keyed by farm+date |
+| D-046 | 2026-11-15 | Single-sine trig uses float math; inputs/outputs Decimal, result quantized to 0.0001 °C·day | Decimal has no trig | - |
+| D-047 | 2026-11-15 | Base/upper temperatures and frost/heat thresholds are grower-entered farm settings, not catalogue defaults | no uncited numbers | cited suggestions per crop later |
+| D-048 | 2026-11-15 | Open-Meteo past_days=92 instead of the archive API tonight; multi-year history (ranges, averages) later | time | archive API + history_daily |
+| D-049 | 2026-11-15 | GDD start date stored per crop setting; start from a growth stage, chosen blocks, target and chill portions are phase 2 | MVP scope | - |
+| D-050 | 2026-11-15 | recharts added for weather charts | in the locked stack | - |
+| D-051 | 2026-11-16 | Kc is entered per block for now (kc_source "entered"); cited FAO-56 Table 12 suggestions come after agronomist validation | no uncited numbers | stage-based Kc from phenology later |
+| D-052 | 2026-11-16 | Soil % mode stored but theta not computed until Saxton & Rawls (2006) is implemented and checked | scientific rigor | T12c |
+| D-053 | 2026-11-16 | Balance starts at Dr = 0 on soil.full_on, else on the first weather day (flagged) | no soil sensor in MVP | sensor reset later |
+| D-054 | 2026-11-16 | irrigation-today returns both "refill" (Dr + ETc) and "maintain" (ETc) and recommends refill when Dr >= RAW | PDF "gross = ETc (or Dr) / E" | - |

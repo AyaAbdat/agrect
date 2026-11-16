@@ -1,0 +1,93 @@
+# Varieties by crop. code is the lower-case slug of the proper name.
+# The proper name is the same in French, Arabic and English.
+# Source: draft list for the agronomist to validate. No numeric coefficients.
+# status: draft — to be validated by the agronomist
+varieties:
+  - crop: table_grape
+    code: red_globe
+    name: "Red Globe"
+    sort: 1
+  - crop: table_grape
+    code: crimson_seedless
+    name: "Crimson Seedless"
+    sort: 2
+  - crop: table_grape
+    code: thompson_seedless
+    name: "Thompson Seedless"
+    sort: 3
+  - crop: table_grape
+    code: muscat_of_alexandria
+    name: "Muscat of Alexandria"
+    sort: 4
+  - crop: table_grape
+    code: cardinal
+    name: "Cardinal"
+    sort: 5
+  - crop: apple
+    code: golden_delicious
+    name: "Golden Delicious"
+    sort: 1
+  - crop: apple
+    code: gala
+    name: "Gala"
+    sort: 2
+  - crop: apple
+    code: granny_smith
+    name: "Granny Smith"
+    sort: 3
+  - crop: apple
+    code: fuji
+    name: "Fuji"
+    sort: 4
+  - crop: apple
+    code: red_delicious
+    name: "Red Delicious"
+    sort: 5
+  - crop: olive
+    code: chemlal
+    name: "Chemlal"
+    sort: 1
+  - crop: olive
+    code: sigoise
+    name: "Sigoise"
+    sort: 2
+  - crop: olive
+    code: arbequina
+    name: "Arbequina"
+    sort: 3
+  - crop: olive
+    code: koroneiki
+    name: "Koroneiki"
+    sort: 4
+  - crop: olive
+    code: picholine
+    name: "Picholine"
+    sort: 5
+  - crop: wheat
+    code: vitron
+    name: "Vitron"
+    sort: 1
+  - crop: wheat
+    code: waha
+    name: "Waha"
+    sort: 2
+  - crop: wheat
+    code: simeto
+    name: "Simeto"
+    sort: 3
+  - crop: wheat
+    code: boussellam
+    name: "Boussellam"
+    sort: 4
+  - crop: wheat
+    code: hd1220
+    name: "HD1220"
+    sort: 5
+  - crop: barley
+    code: saida_183
+    name: "Saida 183"
+    sort: 1
+  - crop: barley
+    code: tichedrett
+    name: "Tichedrett"
+    sort: 2

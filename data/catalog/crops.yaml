@@ -1,0 +1,39 @@
+# Crops in the AGRECT catalogue: code, kind (perennial or annual), sort, and names.
+# Names are catalogue data in French, Arabic and English, not UI translations.
+# Source: AGRECT product catalogue. This file has no agronomic coefficients.
+crops:
+  - code: table_grape
+    kind: perennial
+    sort: 1
+    name:
+      fr: "Vigne (raisin de table)"
+      ar: "كرمة (عنب المائدة)"
+      en: "Table grape"
+  - code: apple
+    kind: perennial
+    sort: 2
+    name:
+      fr: "Pommier"
+      ar: "التفاح"
+      en: "Apple"
+  - code: olive
+    kind: perennial
+    sort: 3
+    name:
+      fr: "Olivier"
+      ar: "الزيتون"
+      en: "Olive"
+  - code: wheat
+    kind: annual
+    sort: 4
+    name:
+      fr: "Blé"
+      ar: "القمح"
+      en: "Wheat"
+  - code: barley
+    kind: annual
+    sort: 5
+    name:
+      fr: "Orge"
+      ar: "الشعير"
+      en: "Barley"

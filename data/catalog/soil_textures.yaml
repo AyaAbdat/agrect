@@ -1,0 +1,164 @@
+# USDA soil texture classes.
+# theta_* are volumetric water contents in m3/m3, written as decimal strings.
+# theta_fc and theta_wp are the midpoint of theta_*_min and theta_*_max.
+# Source: Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration.
+# FAO Irrigation and Drainage Paper 56, Table 19 (typical soil water characteristics).
+# sandy_clay_loam, clay_loam and sandy_clay are not in Table 19:
+# all theta values are null and citation is null.
+soil_textures:
+  - code: sand
+    sort: 1
+    name:
+      fr: "Sable"
+      ar: "رملية"
+      en: "Sand"
+    theta_fc_min: "0.070"
+    theta_fc_max: "0.170"
+    theta_wp_min: "0.020"
+    theta_wp_max: "0.070"
+    theta_fc: "0.120"
+    theta_wp: "0.045"
+    citation: "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56, Table 19 (typical soil water characteristics); typical value = midpoint of the range."
+  - code: loamy_sand
+    sort: 2
+    name:
+      fr: "Sable loameux"
+      ar: "رملية طميية"
+      en: "Loamy sand"
+    theta_fc_min: "0.110"
+    theta_fc_max: "0.190"
+    theta_wp_min: "0.030"
+    theta_wp_max: "0.100"
+    theta_fc: "0.150"
+    theta_wp: "0.065"
+    citation: "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56, Table 19 (typical soil water characteristics); typical value = midpoint of the range."
+  - code: sandy_loam
+    sort: 3
+    name:
+      fr: "Loam sableux"
+      ar: "طميية رملية"
+      en: "Sandy loam"
+    theta_fc_min: "0.180"
+    theta_fc_max: "0.280"
+    theta_wp_min: "0.060"
+    theta_wp_max: "0.160"
+    theta_fc: "0.230"
+    theta_wp: "0.110"
+    citation: "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56, Table 19 (typical soil water characteristics); typical value = midpoint of the range."
+  - code: loam
+    sort: 4
+    name:
+      fr: "Loam"
+      ar: "طميية"
+      en: "Loam"
+    theta_fc_min: "0.200"
+    theta_fc_max: "0.300"
+    theta_wp_min: "0.070"
+    theta_wp_max: "0.170"
+    theta_fc: "0.250"
+    theta_wp: "0.120"
+    citation: "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56, Table 19 (typical soil water characteristics); typical value = midpoint of the range."
+  - code: silt_loam
+    sort: 5
+    name:
+      fr: "Loam limoneux"
+      ar: "طميية غرينية"
+      en: "Silt loam"
+    theta_fc_min: "0.220"
+    theta_fc_max: "0.360"
+    theta_wp_min: "0.090"
+    theta_wp_max: "0.210"
+    theta_fc: "0.290"
+    theta_wp: "0.150"
+    citation: "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56, Table 19 (typical soil water characteristics); typical value = midpoint of the range."
+  - code: silt
+    sort: 6
+    name:
+      fr: "Limon"
+      ar: "غرينية"
+      en: "Silt"
+    theta_fc_min: "0.280"
+    theta_fc_max: "0.360"
+    theta_wp_min: "0.120"
+    theta_wp_max: "0.220"
+    theta_fc: "0.320"
+    theta_wp: "0.170"
+    citation: "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56, Table 19 (typical soil water characteristics); typical value = midpoint of the range."
+  - code: silty_clay_loam
+    sort: 7
+    name:
+      fr: "Loam argilo-limoneux"
+      ar: "طميية طينية غرينية"
+      en: "Silty clay loam"
+    theta_fc_min: "0.300"
+    theta_fc_max: "0.370"
+    theta_wp_min: "0.170"
+    theta_wp_max: "0.240"
+    theta_fc: "0.335"
+    theta_wp: "0.205"
+    citation: "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56, Table 19 (typical soil water characteristics); typical value = midpoint of the range."
+  - code: silty_clay
+    sort: 8
+    name:
+      fr: "Argile limoneuse"
+      ar: "طينية غرينية"
+      en: "Silty clay"
+    theta_fc_min: "0.300"
+    theta_fc_max: "0.420"
+    theta_wp_min: "0.170"
+    theta_wp_max: "0.290"
+    theta_fc: "0.360"
+    theta_wp: "0.230"
+    citation: "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56, Table 19 (typical soil water characteristics); typical value = midpoint of the range."
+  - code: clay
+    sort: 9
+    name:
+      fr: "Argile"
+      ar: "طينية"
+      en: "Clay"
+    theta_fc_min: "0.320"
+    theta_fc_max: "0.400"
+    theta_wp_min: "0.200"
+    theta_wp_max: "0.240"
+    theta_fc: "0.360"
+    theta_wp: "0.220"
+    citation: "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56, Table 19 (typical soil water characteristics); typical value = midpoint of the range."
+  - code: sandy_clay_loam
+    sort: 10
+    name:
+      fr: "Loam argilo-sableux"
+      ar: "طميية طينية رملية"
+      en: "Sandy clay loam"
+    theta_fc_min: null
+    theta_fc_max: null
+    theta_wp_min: null
+    theta_wp_max: null
+    theta_fc: null
+    theta_wp: null
+    citation: null
+  - code: clay_loam
+    sort: 11
+    name:
+      fr: "Loam argileux"
+      ar: "طميية طينية"
+      en: "Clay loam"
+    theta_fc_min: null
+    theta_fc_max: null
+    theta_wp_min: null
+    theta_wp_max: null
+    theta_fc: null
+    theta_wp: null
+    citation: null
+  - code: sandy_clay
+    sort: 12
+    name:
+      fr: "Argile sableuse"
+      ar: "طينية رملية"
+      en: "Sandy clay"
+    theta_fc_min: null
+    theta_fc_max: null
+    theta_wp_min: null
+    theta_wp_max: null
+    theta_fc: null
+    theta_wp: null
+    citation: null

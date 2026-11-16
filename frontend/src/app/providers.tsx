@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 import { I18nextProvider } from "react-i18next"
 import { BrowserRouter } from "react-router"
 import { i18n } from "../i18n"
+import { AuthProvider } from "./auth"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,7 +18,9 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
-        <BrowserRouter>{children}</BrowserRouter>
+        <BrowserRouter>
+          <AuthProvider>{children}</AuthProvider>
+        </BrowserRouter>
       </I18nextProvider>
     </QueryClientProvider>
   )

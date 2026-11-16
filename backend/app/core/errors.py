@@ -24,10 +24,10 @@ class AppError(Exception):
 def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def app_error_handler(_request: Request, exc: AppError) -> JSONResponse:
-        return JSONResponse(
-            status_code=exc.status_code,
-            content={"code": exc.code, "fields": exc.fields or {}},
-        )
+        content: dict[str, object] = {"code": exc.code}
+        if exc.fields:
+            content["fields"] = exc.fields
+        return JSONResponse(status_code=exc.status_code, content=content)
 
     @app.exception_handler(RequestValidationError)
     async def validation_error_handler(

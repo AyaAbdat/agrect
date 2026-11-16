@@ -1,3 +1,11 @@
+import { clearToken, getToken } from "./auth"
+
+let onUnauthorized: (() => void) | null = null
+
+export function setUnauthorizedHandler(handler: () => void): void {
+  onUnauthorized = handler
+}
+
 export class ApiError extends Error {
   status: number
   code: string
@@ -46,19 +54,31 @@ export async function apiSend<T>(
   method: string,
   path: string,
   body?: unknown,
+  extraHeaders?: Record<string, string>,
 ): Promise<T> {
+  const headers: Record<string, string> = { ...extraHeaders }
+  if (body !== undefined) headers["Content-Type"] = "application/json"
+  const token = getToken()
+  if (token !== null) headers.Authorization = `Bearer ${token}`
+
   let response: Response
   try {
     response = await fetch(path, {
       method,
-      headers:
-        body === undefined ? undefined : { "Content-Type": "application/json" },
+      headers: Object.keys(headers).length > 0 ? headers : undefined,
       body: body === undefined ? undefined : JSON.stringify(body),
     })
   } catch {
     throw new ApiError(0, "network_error")
   }
-  if (!response.ok) throw await errorFromResponse(response)
+  if (!response.ok) {
+    const error = await errorFromResponse(response)
+    if (response.status === 401) {
+      clearToken()
+      onUnauthorized?.()
+    }
+    throw error
+  }
   if (response.status === 204) return undefined as T
   return (await response.json()) as T
 }

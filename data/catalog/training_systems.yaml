@@ -1,0 +1,115 @@
+# Training systems by crop: code, sort, name and description in French, Arabic and English.
+# English names and descriptions are the reference wording. French and Arabic are translations.
+# Source: draft labels for the agronomist to validate. No numeric coefficients.
+# status: draft — to be validated by the agronomist
+training_systems:
+  - crop: table_grape
+    code: vsp
+    sort: 1
+    name:
+      fr: "Position verticale des rameaux"
+      ar: "الوضع العمودي للطرود"
+      en: "Vertical shoot position"
+    description:
+      fr: "Rameaux attachés à la verticale sur un seul mur"
+      ar: "طرود مربوطة عمودياً على جدار واحد"
+      en: "Shoots tied upright on one wall"
+  - crop: table_grape
+    code: pergola
+    sort: 2
+    name:
+      fr: "Pergola surélevée"
+      ar: "العريشة العلوية"
+      en: "Overhead pergola"
+    description:
+      fr: "Couvert étalé à plat au-dessus de la hauteur d'homme"
+      ar: "مجموع خضري مبسوط أفقياً فوق مستوى الرأس"
+      en: "Canopy spread flat above head height"
+  - crop: table_grape
+    code: open_gable
+    sort: 3
+    name:
+      fr: "Gable ouvert (Y)"
+      ar: "الجملون المفتوح (Y)"
+      en: "Open gable (Y)"
+    description:
+      fr: "Deux bras de végétation ouverts en Y"
+      ar: "ذراعان نباتيان مفتوحان على شكل Y"
+      en: "Two canopy arms open in a Y"
+  - crop: table_grape
+    code: lyre
+    sort: 4
+    name:
+      fr: "Lyre"
+      ar: "القيثارة"
+      en: "Lyre"
+    description:
+      fr: "Deux rideaux verticaux en U"
+      ar: "ستارتان عموديتان على شكل U"
+      en: "Two upright curtains in a U"
+  - crop: apple
+    code: tall_spindle
+    sort: 1
+    name:
+      fr: "Fuseau haut"
+      ar: "المغزل الطويل"
+      en: "Tall spindle"
+    description:
+      fr: "Axe unique, couronne étroite"
+      ar: "محور واحد وتاج ضيق"
+      en: "Single leader, narrow canopy"
+  - crop: apple
+    code: central_leader
+    sort: 2
+    name:
+      fr: "Axe central"
+      ar: "المحور المركزي"
+      en: "Central leader"
+    description:
+      fr: "Un tronc principal avec des étages de branches"
+      ar: "جذع رئيسي واحد مع طبقات من الأفرع"
+      en: "One main trunk with tiers of branches"
+  - crop: apple
+    code: trellis
+    sort: 3
+    name:
+      fr: "Palissage (V ou plan)"
+      ar: "التعريشة (على شكل V أو مستوية)"
+      en: "Trellis (V or planar)"
+    description:
+      fr: "Branches attachées à un mur ou en V"
+      ar: "أفرع مربوطة إلى جدار أو على شكل V"
+      en: "Branches tied to a wall or a V"
+  - crop: olive
+    code: hedgerow
+    sort: 1
+    name:
+      fr: "Haie fruitière"
+      ar: "السياج الشجري"
+      en: "Hedgerow"
+    description:
+      fr: "Mur continu, récolte mécanique"
+      ar: "جدار متصل يُحصد آلياً"
+      en: "Continuous wall, machine harvested"
+  - crop: olive
+    code: vase
+    sort: 2
+    name:
+      fr: "Gobelet"
+      ar: "الكأس"
+      en: "Vase"
+    description:
+      fr: "Centre ouvert avec trois à quatre charpentières"
+      ar: "مركز مفتوح بثلاثة إلى أربعة أذرع"
+      en: "Open centre with three to four arms"
+  - crop: olive
+    code: single_trunk
+    sort: 3
+    name:
+      fr: "Tronc unique (forme libre)"
+      ar: "جذع واحد (شكل حر)"
+      en: "Single trunk (free form)"
+    description:
+      fr: "Conduite traditionnelle sur un seul tronc"
+      ar: "تربية تقليدية على جذع واحد"
+      en: "Traditional, trained to one trunk"
