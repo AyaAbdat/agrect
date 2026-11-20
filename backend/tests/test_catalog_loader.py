@@ -4,15 +4,28 @@ from pathlib import Path
 
 import pytest
 import yaml
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.db import SessionLocal
 from app.modules.catalog.loader import CATALOG_DIR, load_catalog
-from app.modules.catalog.models import Crop, SoilTextureClass, TrainingSystem, Variety
+from app.modules.catalog.models import (
+    Crop,
+    CropScale,
+    CropScaleCode,
+    SoilTextureClass,
+    StageDd,
+    StageDef,
+    TrainingSystem,
+    Variety,
+    VarietyChill,
+)
 
-# varieties.yaml lists 22 names (barley has two). The summary follows that list.
-_OK = "catalog ok: 5 crops, 22 varieties, 10 training systems, 12 soil classes"
+# varieties.yaml lists 22 names (barley has two). Stages are 9+9+9+11+11.
+_OK = (
+    "catalog ok: 5 crops, 22 varieties, 10 training systems, 12 soil classes, "
+    "49 stages, 0 stage dd, 0 variety chill"
+)
 
 
 def _counts(session: Session) -> tuple[int, int, int, int]:
@@ -50,17 +63,60 @@ def _snapshot(session: Session) -> set[tuple[object, ...]]:
         )
     ):
         found.add(("soil", row.id, row.code, row.created_at, row.updated_at))
+    for row in session.execute(select(CropScale.crop_id, CropScale.scale, CropScale.citation)):
+        found.add(("scale", row.crop_id, row.scale, row.citation))
+    for row in session.execute(select(StageDef.id, StageDef.code, StageDef.name_en, StageDef.sort)):
+        found.add(("stage", row.id, row.code, row.name_en, row.sort))
+    for row in session.execute(select(StageDd.id)):
+        found.add(("stage_dd", row.id))
+    for row in session.execute(select(VarietyChill.variety_id, VarietyChill.citation)):
+        found.add(("variety_chill", row.variety_id, row.citation))
     return found
+
+
+def _stage_counts(session: Session) -> dict[str, int]:
+    rows = session.execute(
+        select(Crop.code, func.count(StageDef.id))
+        .join(StageDef, StageDef.crop_id == Crop.id)
+        .group_by(Crop.code)
+    ).all()
+    return {str(code): int(count) for code, count in rows}
+
+
+def _scales(session: Session) -> dict[str, CropScaleCode]:
+    rows = session.execute(
+        select(Crop.code, CropScale.scale).join(CropScale, CropScale.crop_id == Crop.id)
+    ).all()
+    return {str(code): scale for code, scale in rows}
 
 
 def test_load_twice(capsys: pytest.CaptureFixture[str]) -> None:
     load_catalog()
     with SessionLocal() as session:
         assert _counts(session) == (5, 22, 10, 12)
+        assert _stage_counts(session) == {
+            "table_grape": 9,
+            "apple": 9,
+            "olive": 9,
+            "wheat": 11,
+            "barley": 11,
+        }
+        assert sum(_stage_counts(session).values()) == 49
+        assert _scales(session) == {
+            "table_grape": CropScaleCode.el,
+            "apple": CropScaleCode.bbch,
+            "olive": CropScaleCode.bbch_olive,
+            "wheat": CropScaleCode.zadoks,
+            "barley": CropScaleCode.zadoks,
+        }
+        assert len(session.scalars(select(StageDd)).all()) == 0
+        assert len(session.scalars(select(VarietyChill)).all()) == 0
         first = _snapshot(session)
     load_catalog()
     with SessionLocal() as session:
         assert _counts(session) == (5, 22, 10, 12)
+        assert sum(_stage_counts(session).values()) == 49
+        assert len(_scales(session)) == 5
         assert _snapshot(session) == first
     assert capsys.readouterr().out.count(_OK) == 2
 
@@ -162,3 +218,68 @@ def test_unknown_variety_crop_writes_nothing(
     assert "unknown crop 'fig'" in captured
     with SessionLocal() as session:
         assert _counts(session) == (0, 0, 0, 0)
+
+
+def _cited_stage_dd(stage: str, citation: str | None) -> dict[str, object]:
+    return {
+        "crop": "olive",
+        "stage": stage,
+        "variety": None,
+        "dd_value": "100",
+        "base_c": "10",
+        "upper_c": None,
+        "method": "average",
+        "source_kind": "literature",
+        "citation": citation,
+    }
+
+
+def test_uncited_stage_dd_writes_nothing(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    catalog = _copy_catalog(tmp_path)
+
+    def add_uncited(raw: dict[str, object]) -> None:
+        rows = raw["stage_dd"]
+        assert isinstance(rows, list)
+        rows.append(_cited_stage_dd("65", None))
+
+    _rewrite(catalog / "stage_dd.yaml", add_uncited)
+    with pytest.raises(SystemExit) as exc:
+        load_catalog(catalog)
+    assert exc.value.code == 1
+    captured = capsys.readouterr().out
+    assert "stage_dd.yaml: olive/65:" in captured
+    assert "citation is required" in captured
+    with SessionLocal() as session:
+        assert _counts(session) == (0, 0, 0, 0)
+        assert len(session.scalars(select(StageDd)).all()) == 0
+
+
+def test_unknown_stage_code_writes_nothing(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    catalog = _copy_catalog(tmp_path)
+
+    def add_unknown(raw: dict[str, object]) -> None:
+        rows = raw["stage_dd"]
+        assert isinstance(rows, list)
+        rows.append(
+            _cited_stage_dd(
+                "99",
+                "Author A. (2000). Title. Journal 1:1–2, Table 1.",
+            )
+        )
+
+    _rewrite(catalog / "stage_dd.yaml", add_unknown)
+    with pytest.raises(SystemExit) as exc:
+        load_catalog(catalog)
+    assert exc.value.code == 1
+    captured = capsys.readouterr().out
+    assert "stage_dd.yaml: olive/99:" in captured
+    assert "unknown stage '99'" in captured
+    with SessionLocal() as session:
+        assert _counts(session) == (0, 0, 0, 0)
+        assert len(session.scalars(select(StageDef)).all()) == 0

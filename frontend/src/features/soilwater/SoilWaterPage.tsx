@@ -7,7 +7,7 @@ import { apiGet } from "../../lib/api"
 import { UNIT_MM } from "../../lib/units"
 import { activeLang, type BlockDetail } from "../blocks/types"
 import { OptionalTag } from "../blocks/wizard/wizardUi"
-import { asNumber, farmToday, shiftIsoDate } from "../weather/format"
+import { asNumber, farmToday, formatMediumDate, shiftIsoDate } from "../weather/format"
 import {
   FormulaTip,
   LoadError,
@@ -19,9 +19,10 @@ import {
   primaryBtn,
 } from "../weather/ui"
 import { WaterChart, hasChartData, waterPoints } from "./chart"
-import { balanceNote, efficiencyPercent, formatEventDate, runParts, show } from "./display"
+import { balanceNote, efficiencyPercent, formatEventDate, mm2, runParts, show } from "./display"
 import { LogIrrigationDrawer } from "./LogIrrigationDrawer"
 import type {
+  BalanceRow,
   FarmClock,
   ForecastRain,
   IrrigationEvents,
@@ -145,6 +146,11 @@ export function SoilWaterPage() {
     .map((note) => balanceNote(note, lang, t))
     .filter((note): note is string => note !== null)
   const balanceToday = balance.rows.find((row) => row.date === advice.date)
+  const waterNow = balance.rows.reduce<BalanceRow | undefined>((latest, row) => {
+    if (row.date > advice.date) return latest
+    if (latest === undefined || row.date > latest.date) return row
+    return latest
+  }, undefined)
   const forecastToday = forecastQuery.data?.daily.find((day) => day.date === advice.date)
   const rain = balanceToday?.rain_mm ?? forecastToday?.rain_mm ?? null
   const latest = eventsQuery.data.events[0]
@@ -191,10 +197,15 @@ export function SoilWaterPage() {
           </div>
           <p className="mt-3 text-[28px] font-bold leading-tight">
             {t("soil.waterLeftLine", {
-              left: show(advice.water_left_mm, lang),
-              taw: show(advice.taw_mm, lang),
+              left: mm2(waterNow?.water_left_mm, lang),
+              taw: show(waterNow?.taw_mm ?? advice.taw_mm, lang),
             })}
           </p>
+          {waterNow !== undefined ? (
+            <p className="mt-1 text-[13px] text-mut">
+              {t("soil.waterLeftAsOf", { date: formatMediumDate(waterNow.date, lang) })}
+            </p>
+          ) : null}
           <p className="mt-1 text-[13px] text-mut">
             {t("soil.irrigateBelow", { value: show(advice.irrigate_below_mm, lang) })}
           </p>

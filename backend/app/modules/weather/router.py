@@ -2,37 +2,45 @@ import uuid
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Response
 
-from app.core.deps import CurrentFarm, Db
+from app.core.deps import CurrentBlock, CurrentFarm, Db
 from app.core.errors import AppError
 from app.modules.weather.client import WeatherProviderError
 from app.modules.weather.schemas import (
+    BlockGddSettingOut,
     DailyOut,
     DegreeDaysOut,
     ForecastOut,
     GddSettingIn,
     GddSettingListItem,
     GddSettingOut,
+    HistoryStatusOut,
     NowOut,
     RefreshOut,
     ThresholdsIn,
     ThresholdsOut,
 )
 from app.modules.weather.service import (
+    delete_block_gdd_setting,
+    history_backfill,
+    read_block_gdd_setting,
     read_daily,
     read_degree_days,
     read_forecast,
     read_gdd_setting,
     read_gdd_settings,
+    read_history_status,
     read_now,
     read_thresholds,
     refresh,
+    write_block_gdd_setting,
     write_gdd_setting,
     write_thresholds,
 )
 
 router = APIRouter(prefix="/farms/{farm_id}", tags=["weather"])
+blocks_router = APIRouter(prefix="/blocks", tags=["weather"])
 
 
 @router.post("/weather/refresh", response_model=RefreshOut)
@@ -63,14 +71,48 @@ def weather_daily(
     return read_daily(db, farm, from_date=from_date, to_date=to_date)
 
 
+@router.get("/weather/history/status", response_model=HistoryStatusOut)
+def weather_history_status(farm: CurrentFarm, db: Db) -> HistoryStatusOut:
+    return read_history_status(db, farm)
+
+
+@router.post("/weather/history/backfill", response_model=HistoryStatusOut)
+def weather_history_backfill(farm: CurrentFarm, db: Db) -> HistoryStatusOut:
+    try:
+        return history_backfill(db, farm)
+    except WeatherProviderError:
+        raise AppError("weather.provider_unavailable", 502) from None
+
+
 @router.get("/weather/degree-days", response_model=DegreeDaysOut)
 def weather_degree_days(
     farm: CurrentFarm,
     db: Db,
     crop_id: uuid.UUID,
+    block_id: uuid.UUID | None = None,
     from_date: Annotated[date | None, Query(alias="from")] = None,
 ) -> DegreeDaysOut:
-    return read_degree_days(db, farm, crop_id, from_date)
+    return read_degree_days(db, farm, crop_id, from_date, block_id)
+
+
+@blocks_router.get("/{block_id}/gdd-setting", response_model=BlockGddSettingOut)
+def get_block_gdd_setting(block: CurrentBlock, db: Db) -> BlockGddSettingOut:
+    return read_block_gdd_setting(db, block)
+
+
+@blocks_router.put("/{block_id}/gdd-setting", response_model=BlockGddSettingOut)
+def put_block_gdd_setting(
+    body: GddSettingIn,
+    block: CurrentBlock,
+    db: Db,
+) -> BlockGddSettingOut:
+    return write_block_gdd_setting(db, block, body)
+
+
+@blocks_router.delete("/{block_id}/gdd-setting", status_code=204)
+def remove_block_gdd_setting(block: CurrentBlock, db: Db) -> Response:
+    delete_block_gdd_setting(db, block)
+    return Response(status_code=204)
 
 
 @router.get("/thresholds", response_model=ThresholdsOut)

@@ -513,3 +513,84 @@ def test_typed_block_flow_is_stored_per_hectare(
     assert layout["q_ha_m3h"] == "26.67"
     assert layout["q_block_m3h"] == "40.00"
     assert layout["sources"]["q_ha_m3h"] == "calculated"
+
+
+def test_required_fields_only_completes(
+    client: TestClient,
+    make_user: Callable[[str, str], AppUser],
+    make_farm: Callable[..., Farm],
+    auth_header: Callable[[AppUser], dict[str, str]],
+) -> None:
+    farm, headers = _owner(make_user, make_farm, auth_header, "required-only@agrect.app")
+    created = _draft(
+        client,
+        farm,
+        headers,
+        name="Required",
+        with_square=True,
+        crop=True,
+        rows_total=10,
+    )
+    block_id = str(created["id"])
+    planted = _put(
+        client,
+        f"/v1/blocks/{block_id}/plantings",
+        headers,
+        int(created["version"]),
+        {
+            "plantings": [
+                {
+                    "density_input": "spacing",
+                    "row_spacing_m": "4.00",
+                    "tree_spacing_m": "2.00",
+                }
+            ]
+        },
+    )
+    assert planted.status_code == 200
+    laid = _put(
+        client,
+        f"/v1/blocks/{block_id}/irrigation-layout",
+        headers,
+        planted.json()["version"],
+        {
+            "system": "drip",
+            "entry_mode": "typed_flow",
+            "typed_flow_basis": "block",
+            "typed_flow_m3h": "12",
+        },
+    )
+    assert laid.status_code == 200
+    done = client.post(
+        f"/v1/blocks/{block_id}/complete",
+        headers={**headers, "If-Match": str(laid.json()["version"])},
+    )
+    assert done.status_code == 200
+    body = done.json()
+    assert body["status"] == "complete"
+    assert body["name"] == "Required"
+    assert body["outline"] is not None
+    assert body["net_area_ha"] is not None
+    assert body["crop"] is not None
+    assert body["rows_total"] == 10
+    assert body["row_line"] is None
+    assert body["row_bearing_deg"] is None
+    assert body["training_system_id"] is None
+    assert body["training_other"] is None
+    planting = body["plantings"][0]
+    assert planting["row_spacing_m"] == "4.00"
+    assert planting["tree_spacing_m"] == "2.00"
+    assert planting["variety_id"] is None
+    assert planting["variety_text"] is None
+    assert planting["rootstock"] is None
+    assert planting["planting_year"] is None
+    layout = body["irrigation_layout"]
+    assert layout["entry_mode"] == "typed_flow"
+    assert layout["typed_flow_basis"] == "block"
+    assert layout["typed_flow_m3h"] == "12.00"
+    assert layout["laterals_per_row"] is None
+    assert layout["emitter_spacing_m"] is None
+    assert layout["emitter_flow_lph"] is None
+    assert layout["emitters_per_tree"] is None
+    assert layout["flow_per_emitter_lph"] is None
+    assert body["valves"][0]["typed_q_m3h"] is None

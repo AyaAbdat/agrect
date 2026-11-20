@@ -18,7 +18,7 @@
 | D-014 | 2026-11-04 | Desktop Figma frames (D-xx, docs/agrect-desktop.md) supersede the PDF's mobile frame IDs | latest design | - |
 | D-015 | 2026-11-04 | T01 split into T01a (backend/infra) and T01b (frontend shell) | 45-minute task limit | - |
 | D-016 | 2026-11-04 | Language switcher in the avatar menu and on the login card | the design has no language control; the jury must switch FR/AR/EN | - |
-| D-017 | 2026-11-04 | Fonts: Inter + Noto Sans Arabic via Google Fonts, system-ui fallback | Inter has no Arabic glyphs | self-host fonts in T19 (PWA) |
+| D-017 | 2026-11-04 | Fonts: Inter + Noto Sans Arabic via Google Fonts, system-ui fallback | Inter has no Arabic glyphs | closed by D-057 |
 | D-018 | 2026-11-04 | Tailwind v4 (@tailwindcss/vite) and React Router v7 (`react-router` package, declarative mode) on React 18 | current versions compatible with the locked stack | - |
 | D-019 | 2026-11-04 | Drawer opens at the inline end (right in FR/EN, left in AR) | RTL mirroring | - |
 | D-020 | 2026-11-04 | shadcn/ui on the Base UI ("nova") preset instead of Radix | `shadcn init -d` now scaffolds Next.js; this preset keeps Vite | - |
@@ -58,3 +58,8 @@
 | D-054 | 2026-11-16 | irrigation-today returns both "refill" (Dr + ETc) and "maintain" (ETc) and recommends refill when Dr >= RAW | PDF "gross = ETc (or Dr) / E" | - |
 | D-055 | 2026-11-16 | Caddy automatic HTTPS for app.agrect.com with 13.140.215.136.sslip.io as a fallback address | real domain + no-DNS fallback | - |
 | D-056 | 2026-11-16 | Migrations and the catalogue loader run at api start (idempotent) | one-command deploy | - |
+| D-057 | 2026-11-20 | Installable PWA via vite-plugin-pwa. Precache the app shell only; `/v1` is NetworkOnly so live data is never cached. Fonts are self-hosted with @fontsource (Inter 400–700 and Noto Sans Arabic 400–700). Icons come from @vite-pwa/assets-generator. Closes D-017. | Online PWA (D-004): weather and irrigation must stay live, and the installed app must not call Google Fonts | - |
+| D-058 | 2026-11-20 | Stage degree days start empty. Global values are stored only with a citation. Farm values are entered by the grower and compared only with the same base and method. | No uncited degree-day or chill numbers | Add cited rows to stage_dd.yaml and variety_chill.yaml after agronomist sign-off |
+| D-059 | 2026-11-20 | Daily history comes from the Open-Meteo archive (estimated, reanalysis-based). HISTORY_YEARS defaults to 10. Refresh is on demand; the scheduler comes later | Ranges and same-calendar-day averages need more than the 92 forecast days (D-048) | APScheduler job keyed by farm later |
+| D-060 | 2026-11-20 | Stage degree days are cumulative from the season start. An observed stage is a fact and re-anchors later stages: the predicted date is the first day after that observation where degree days counted since then reach the difference of the two cumulative targets. If the anchor has no degree-day target, counting stays on the season-start total. Earliest and latest need at least 3 complete history years. A typical-window review flag is deferred until cited windows exist. | No invented degree days or stage windows | Add the flag when cited stage windows are in the catalogue |
+| D-061 | 2026-11-20 | A block degree-day override wins over the crop setting. Degree days, stage targets and the Today column use that effective setting. Deleting the override falls back to the crop setting. | The grower can count one block differently without changing the rest of the crop | - |

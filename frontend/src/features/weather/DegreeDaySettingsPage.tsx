@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useRef, useState } from "react"
 import { useForm, type UseFormRegisterReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -13,14 +13,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { activeLang, localizedName, type BlockDetail, type CatalogCrop } from "../blocks/types"
+import {
+  activeLang,
+  localizedName,
+  type BlockDetail,
+  type BlockListItem,
+  type CatalogCrop,
+} from "../blocks/types"
 import { useAuth } from "../../app/auth"
 import { ApiError, apiGet, apiSend } from "../../lib/api"
 import { formatNumber } from "../../lib/format"
 import { UNIT_TEMP_C } from "../../lib/units"
 import { gddErrorKey } from "./errors"
 import { asNumber, decimalInput, formatMediumDate, isDecimal, wireDecimal } from "./format"
-import type { GddMethod, GddSetting, GddSettingListItem } from "./types"
+import type { BlockGddSetting, GddMethod, GddSetting, GddSettingListItem } from "./types"
 import {
   ChoiceChip,
   FieldError,
@@ -82,6 +88,8 @@ export function DegreeDaySettingsPage() {
   const { currentFarmId } = useAuth()
   const lang = activeLang(i18n.resolvedLanguage ?? i18n.language)
   const [formError, setFormError] = useState<string | null>(null)
+  const [applies, setApplies] = useState<"all" | "chosen">("all")
+  const [selected, setSelected] = useState<string[]>([])
   const seeded = useRef(false)
   const farmId = currentFarmId
   const blockQuery = useQuery({
@@ -98,6 +106,18 @@ export function DegreeDaySettingsPage() {
     queryFn: () => apiGet<GddSettingListItem[]>(`/v1/farms/${farmId}/gdd-settings`),
     enabled: farmId !== null,
   })
+  const farmBlocksQuery = useQuery({
+    queryKey: ["blocks", farmId],
+    queryFn: () => apiGet<BlockListItem[]>(`/v1/farms/${farmId}/blocks`),
+    enabled: farmId !== null,
+  })
+  const blockIds = (farmBlocksQuery.data ?? []).map((block) => block.id)
+  const overrideQueries = useQueries({
+    queries: blockIds.map((id) => ({
+      queryKey: ["block-gdd-setting", id],
+      queryFn: () => apiGet<BlockGddSetting>(`/v1/blocks/${id}/gdd-setting`),
+    })),
+  })
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: blank,
@@ -112,13 +132,25 @@ export function DegreeDaySettingsPage() {
   }, [blockQuery.data, rows, reset])
 
   if (farmId === null || blockId === undefined) return null
-  if (blockQuery.isPending || cropsQuery.isPending || listQuery.isPending) return <PageSkeleton />
+  const overridesPending = overrideQueries.some((query) => query.isPending)
+  if (
+    blockQuery.isPending ||
+    cropsQuery.isPending ||
+    listQuery.isPending ||
+    farmBlocksQuery.isPending ||
+    overridesPending
+  ) {
+    return <PageSkeleton />
+  }
   if (
     blockQuery.isError ||
     cropsQuery.isError ||
     listQuery.isError ||
+    farmBlocksQuery.isError ||
+    overrideQueries.some((query) => query.isError) ||
     blockQuery.data === undefined ||
     cropsQuery.data === undefined ||
+    farmBlocksQuery.data === undefined ||
     rows === undefined
   ) {
     return (
@@ -127,33 +159,71 @@ export function DegreeDaySettingsPage() {
           void blockQuery.refetch()
           void cropsQuery.refetch()
           void listQuery.refetch()
+          void farmBlocksQuery.refetch()
+          for (const query of overrideQueries) void query.refetch()
         }}
       />
     )
   }
 
   const crops = cropsQuery.data
+  const farmBlocks = farmBlocksQuery.data
+  const views = listedOverrides(farmBlocks, overrideQueries)
   const cropId = watch("crop_id")
   const method = watch("method")
   const items = Object.fromEntries(crops.map((crop) => [crop.id, localizedName(crop.name, lang)]))
+  const cropBlocks = farmBlocks.filter(
+    (block) => block.status !== "archived" && block.crop?.id === cropId,
+  )
+  const shownCrops = crops.filter(
+    (crop) =>
+      rows.some((row) => row.crop_id === crop.id) || views.some((view) => view.cropId === crop.id),
+  )
 
   function loadCrop(nextId: string) {
     if (rows === undefined) return
     reset(valuesFor(nextId, rows))
+    setApplies("all")
+    setSelected([])
     setFormError(null)
+  }
+
+  function pickChosen() {
+    setApplies("chosen")
+    setSelected(views.filter((view) => view.cropId === cropId).map((view) => view.blockId))
+  }
+
+  function toggleBlock(id: string) {
+    setFormError(null)
+    setSelected((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+    )
   }
 
   async function onSubmit(values: FormValues) {
     setFormError(null)
     const base = wireDecimal(values.base_c)
     if (base === null) return
+    const payload = {
+      base_c: base,
+      upper_c: wireDecimal(values.upper_c),
+      method: values.method,
+      start_date: values.start_date,
+    }
+    if (applies === "chosen" && selected.length === 0) {
+      setFormError("weather.errors.blocksRequired")
+      return
+    }
     try {
-      await apiSend<GddSetting>("PUT", `/v1/farms/${farmId}/gdd-settings/${values.crop_id}`, {
-        base_c: base,
-        upper_c: wireDecimal(values.upper_c),
-        method: values.method,
-        start_date: values.start_date,
-      })
+      if (applies === "chosen") {
+        await Promise.all(
+          selected.map((id) =>
+            apiSend<BlockGddSetting>("PUT", `/v1/blocks/${id}/gdd-setting`, payload),
+          ),
+        )
+      } else {
+        await apiSend<GddSetting>("PUT", `/v1/farms/${farmId}/gdd-settings/${values.crop_id}`, payload)
+      }
     } catch (error) {
       if (error instanceof ApiError) {
         const baseCode = error.fields.base_c
@@ -168,8 +238,22 @@ export function DegreeDaySettingsPage() {
     }
     await queryClient.invalidateQueries({ queryKey: ["gdd-settings", farmId] })
     await queryClient.invalidateQueries({ queryKey: ["gdd-setting", farmId] })
+    await queryClient.invalidateQueries({ queryKey: ["block-gdd-setting"] })
     await queryClient.invalidateQueries({ queryKey: ["weather", farmId] })
     void navigate(`/blocks/${blockId}/weather/degree-days`)
+  }
+
+  async function removeOverride(id: string) {
+    setFormError(null)
+    try {
+      await apiSend("DELETE", `/v1/blocks/${id}/gdd-setting`)
+    } catch {
+      setFormError("weather.errors.save")
+      return
+    }
+    setSelected((current) => current.filter((item) => item !== id))
+    await queryClient.invalidateQueries({ queryKey: ["block-gdd-setting", id] })
+    await queryClient.invalidateQueries({ queryKey: ["weather", farmId] })
   }
 
   return (
@@ -215,11 +299,37 @@ export function DegreeDaySettingsPage() {
             <div>
               <FieldLabel label={t("weather.appliesTo")} />
               <div className="flex flex-wrap gap-2">
-                <ChoiceChip selected>{t("weather.allBlocks")}</ChoiceChip>
-                <ChoiceChip selected={false} disabled badge={t("weather.phase2")}>
+                <ChoiceChip selected={applies === "all"} onClick={() => setApplies("all")}>
+                  {t("weather.allBlocks")}
+                </ChoiceChip>
+                <ChoiceChip selected={applies === "chosen"} onClick={pickChosen}>
                   {t("weather.chosenBlocks")}
                 </ChoiceChip>
               </div>
+              {applies === "chosen" ? (
+                cropBlocks.length === 0 ? (
+                  <p className="mt-3 text-[13px] text-mut">{t("weather.noCropBlocks")}</p>
+                ) : (
+                  <div className="mt-3">
+                    <FieldLabel label={t("weather.blocks")} tag="required" />
+                    <ul className="flex flex-col gap-2">
+                      {cropBlocks.map((block) => (
+                        <li key={block.id}>
+                          <label className="flex items-center gap-2 text-[13px]">
+                            <input
+                              type="checkbox"
+                              className="size-4"
+                              checked={selected.includes(block.id)}
+                              onChange={() => toggleBlock(block.id)}
+                            />
+                            <span>{block.name}</span>
+                          </label>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )
+              ) : null}
             </div>
             <NumberField
               label={t("weather.base")}
@@ -277,41 +387,106 @@ export function DegreeDaySettingsPage() {
         </form>
         <aside className={cardClass}>
           <h2 className="text-[15px] font-bold">{t("weather.cropsSetUp")}</h2>
-          {rows.length === 0 ? (
+          {shownCrops.length === 0 ? (
             <p className="mt-4 text-[13px] text-mut">{t("weather.cropsEmpty")}</p>
           ) : (
             <ul className="mt-3 flex flex-col gap-2">
-              {rows.map((row) => (
-                <li key={row.crop_id}>
-                  <button
-                    type="button"
-                    onClick={() => loadCrop(row.crop_id)}
-                    className={`w-full rounded-xl border px-3 py-2 text-start ${
-                      row.crop_id === cropId ? "border-pri bg-mint" : "border-line"
+              {shownCrops.map((crop) => {
+                const row = rows.find((item) => item.crop_id === crop.id)
+                const overs = views.filter((view) => view.cropId === crop.id)
+                return (
+                  <li
+                    key={crop.id}
+                    className={`rounded-xl border ${
+                      crop.id === cropId ? "border-pri bg-mint" : "border-line"
                     }`}
                   >
-                    <span className="block text-[13px] font-semibold">
-                      {localizedName(row.name, lang)}
-                    </span>
-                    <span className="mt-0.5 block text-[12px] text-mut">
-                      {t("weather.cropLine", {
-                        base: formatNumber(asNumber(row.base_c), 1, lang),
-                        method: methodLabel(row.method, t),
-                        since:
-                          row.start_date === null
-                            ? t("common.missing")
-                            : formatMediumDate(row.start_date, lang),
-                      })}
-                    </span>
-                  </button>
-                </li>
-              ))}
+                    <button
+                      type="button"
+                      onClick={() => loadCrop(crop.id)}
+                      className="w-full px-3 py-2 text-start"
+                    >
+                      <span className="block text-[13px] font-semibold">
+                        {localizedName(crop.name, lang)}
+                      </span>
+                      {row !== undefined ? (
+                        <span className="mt-0.5 block text-[12px] text-mut">
+                          {t("weather.cropLine", {
+                            base: formatNumber(asNumber(row.base_c), 1, lang),
+                            method: methodLabel(row.method, t),
+                            since:
+                              row.start_date === null
+                                ? t("common.missing")
+                                : formatMediumDate(row.start_date, lang),
+                          })}
+                        </span>
+                      ) : null}
+                    </button>
+                    {overs.length > 0 ? (
+                      <ul className="flex flex-col gap-2 px-3 pb-3">
+                        {overs.map((view) => (
+                          <li key={view.blockId} className="flex items-start justify-between gap-2">
+                            <span className="text-[12px] text-mut">
+                              {t("weather.overrideLine", {
+                                block: view.blockName,
+                                base: formatNumber(asNumber(view.base_c), 1, lang),
+                                method: methodLabel(view.method, t),
+                              })}
+                            </span>
+                            <button
+                              type="button"
+                              className="shrink-0 text-[12px] font-semibold text-pri"
+                              onClick={() => void removeOverride(view.blockId)}
+                            >
+                              {t("weather.removeOverride")}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </li>
+                )
+              })}
             </ul>
           )}
         </aside>
       </div>
     </div>
   )
+}
+
+function listedOverrides(
+  blocks: BlockListItem[],
+  rows: { data: BlockGddSetting | undefined }[],
+): OverrideView[] {
+  const found: OverrideView[] = []
+  blocks.forEach((block, index) => {
+    const setting = rows[index]?.data
+    if (
+      block.status === "archived" ||
+      setting?.method == null ||
+      setting.base_c === null ||
+      block.crop === null
+    ) {
+      return
+    }
+    found.push({
+      blockId: block.id,
+      blockName: block.name,
+      cropId: block.crop.id,
+      base_c: setting.base_c,
+      method: setting.method,
+    })
+  })
+  return found
+}
+
+type OverrideView = {
+  blockId: string
+  blockName: string
+  cropId: string
+  base_c: string
+  method: GddMethod
 }
 
 function methodLabel(method: GddMethod, t: (key: string) => string): string {

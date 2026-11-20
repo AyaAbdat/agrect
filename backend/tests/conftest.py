@@ -45,6 +45,7 @@ os.environ["DATABASE_URL"] = (
 )
 
 from app.core.config import get_settings
+from app.modules.weather.client import WeatherProviderError
 
 get_settings.cache_clear()
 
@@ -79,10 +80,14 @@ def _truncate_test_tables() -> None:
     with engine.begin() as connection:
         connection.execute(
             text(
-                "TRUNCATE TABLE irrigation_event, soil_check, water_balance_daily, "
+                "TRUNCATE TABLE stage_prediction, stage_observation, block_season, "
+                "irrigation_event, soil_check, water_balance_daily, "
                 "soil_profile, irrigation_settings, weather_hourly, weather_daily, "
-                "gdd_setting, farm_thresholds, planting, irrigation_layout, valve, "
-                "record_version, block, "
+                "history_daily, "
+                "gdd_setting_block, gdd_setting, farm_thresholds, planting, "
+                "irrigation_layout, valve, "
+                "record_version, block, farm_stage_pref, stage_dd, variety_chill, "
+                "stage_def, crop_scale, "
                 "app_user, farm, variety, training_system, soil_texture_class, crop "
                 "RESTART IDENTITY CASCADE"
             )
@@ -101,6 +106,25 @@ def _prepare_test_database() -> None:
 def _clean_tables() -> Generator[None, None, None]:
     yield
     _truncate_test_tables()
+
+
+@pytest.fixture(autouse=True)
+def _block_archive_network(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Degree-day reads must not call the real archive while history is empty."""
+
+    def _blocked(*_args: object, **_kwargs: object) -> list[object]:
+        raise WeatherProviderError("archive disabled in tests")
+
+    monkeypatch.setattr("app.modules.weather.service.fetch_archive", _blocked)
+
+
+@pytest.fixture(autouse=True)
+def _join_history_workers() -> Generator[None, None, None]:
+    yield
+    from app.modules.weather.service import _jobs
+
+    for thread in list(_jobs.values()):
+        thread.join(timeout=5)
 
 
 @pytest.fixture

@@ -163,6 +163,15 @@ class GddSettingOut(ApiModel):
     start_date: date | None = None
 
 
+class BlockGddSettingOut(ApiModel):
+    block_id: uuid.UUID
+    base_c: Decimal | None
+    upper_c: Decimal | None
+    method: GddMethod | None
+    start_date: date | None = None
+    version: int | None = None
+
+
 class GddSettingListItem(ApiModel):
     crop_id: uuid.UUID
     code: str
@@ -178,6 +187,7 @@ class GddSettingBrief(ApiModel):
     upper_c: Decimal | None
     method: GddMethod
     start_date: date | None = None
+    override: bool = False
 
 
 class DegreeDayPoint(ApiModel):
@@ -206,3 +216,15 @@ class DegreeDaysOut(ApiModel):
     label: Literal["calculated", "not_enough_data"]
     issued_at: datetime | None
     stale: bool
+    history_status: Literal["ready", "loading", "empty"]
+
+
+class HistoryStatusOut(ApiModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    years: list[int]
+    from_date: date | None = Field(default=None, alias="from")
+    to_date: date | None = Field(default=None, alias="to")
+    days: int
+    last_fetched_at: datetime | None
+    status: Literal["ready", "loading", "empty"]

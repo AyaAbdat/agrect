@@ -121,6 +121,7 @@ export type BalanceRow = {
   etc_mm: string | null
   rain_mm: string | null
   irrigation_soil_mm: string | null
+  taw_mm: string | null
   water_left_mm: string | null
   irrigate_below_mm: string | null
   status: "ok" | "irrigate_soon" | "no_data"

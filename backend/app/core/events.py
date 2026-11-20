@@ -5,7 +5,8 @@ session in the payload so a handler reads and writes inside the caller's
 transaction; handlers must not commit.
 
 Event names match the system design: ``weather.daily_ready``,
-``irrigation.logged``, ``waterbalance.updated``, ``block.updated``.
+``irrigation.logged``, ``waterbalance.updated``, ``block.updated``,
+``stage.observed``, ``stage.predicted``.
 """
 
 from collections import defaultdict
@@ -20,6 +21,8 @@ EVENT_NAMES = frozenset(
         "irrigation.logged",
         "waterbalance.updated",
         "block.updated",
+        "stage.observed",
+        "stage.predicted",
     }
 )
 

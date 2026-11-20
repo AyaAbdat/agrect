@@ -98,6 +98,15 @@ export type GddSetting = {
   start_date: string | null
 }
 
+export type BlockGddSetting = {
+  block_id: string
+  base_c: string | null
+  upper_c: string | null
+  method: GddMethod | null
+  start_date: string | null
+  version: number | null
+}
+
 export type GddSettingListItem = {
   crop_id: string
   code: string
@@ -121,6 +130,7 @@ export type DegreeDays = {
     upper_c: string | null
     method: GddMethod
     start_date: string | null
+    override: boolean
   } | null
   from: string
   data_from: string | null

@@ -7,6 +7,7 @@ Reads refresh the farm when the newest ``issued_at`` is older than 60 minutes
 import hashlib
 import json
 import logging
+import threading
 import uuid
 from collections.abc import Iterable, Sequence
 from datetime import UTC, date, datetime, time, timedelta
@@ -17,13 +18,19 @@ from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
+from app.core.db import SessionLocal
 from app.core.errors import AppError
 from app.core.events import publish
 from app.modules.catalog.models import Crop
 from app.modules.catalog.schemas import LocalizedName
 from app.modules.farms.models import Farm
 from app.modules.farms.service import read_lat_lon
+from app.modules.registry.models import Block
 from app.modules.weather.calc import (
+    CalendarDayAverage,
+    CalendarDayTemps,
+    average_by_calendar_day,
     chill_hours,
     count_hours_at_or_above,
     count_hours_at_or_below,
@@ -33,15 +40,26 @@ from app.modules.weather.calc import (
     radiation_sum_jcm2,
     vpd_kpa,
 )
-from app.modules.weather.client import HourlyObservation, WeatherProviderError, fetch_forecast
+from app.modules.weather.client import (
+    ArchiveDay,
+    HourlyObservation,
+    WeatherProviderError,
+    fetch_archive,
+    fetch_forecast,
+    year_chunks,
+)
 from app.modules.weather.models import (
+    EffectiveGddSetting,
     FarmThresholds,
     GddMethod,
     GddSetting,
+    GddSettingBlock,
+    HistoryDaily,
     WeatherDaily,
     WeatherHourly,
 )
 from app.modules.weather.schemas import (
+    BlockGddSettingOut,
     ChillOut,
     DailyOut,
     DailyRowOut,
@@ -54,6 +72,7 @@ from app.modules.weather.schemas import (
     GddSettingIn,
     GddSettingListItem,
     GddSettingOut,
+    HistoryStatusOut,
     NowOut,
     RefreshOut,
     ThresholdsIn,
@@ -64,7 +83,14 @@ logger = logging.getLogger(__name__)
 
 SOURCE = "estimated"
 STALE_AFTER = timedelta(minutes=60)
+ARCHIVE_LAG_DAYS = 6
+COMPLETE_YEAR_DAYS = 360
+HISTORY_ENSURE_TIMEOUT_S = 5.0
 _UPSERT_CHUNK = 400
+_state_guard = threading.Lock()
+_farm_locks: dict[uuid.UUID, threading.Lock] = {}
+_holders: dict[uuid.UUID, int] = {}
+_jobs: dict[uuid.UUID, threading.Thread] = {}
 
 _FROST_MIN = Decimal("-10")
 _FROST_MAX = Decimal("10")
@@ -222,15 +248,16 @@ def read_degree_days(
     farm: Farm,
     crop_id: uuid.UUID,
     from_date: date | None,
+    block_id: uuid.UUID | None = None,
 ) -> DegreeDaysOut:
     _require_crop(db, crop_id)
-    saved = _gdd_row(db, farm.id, crop_id)
+    setting = _setting_for_degree_days(db, farm, crop_id, block_id)
     if from_date is None:
-        if saved is None or saved.start_date is None:
+        if setting is None or setting.start_date is None:
             raise AppError("gdd.start_date_required", 422)
-        from_date = saved.start_date
+        from_date = setting.start_date
+    history_status = ensure_history(db, farm)
     stale = ensure_fresh(db, farm)
-    setting = _gdd_row(db, farm.id, crop_id)
     rows = list(
         db.scalars(
             select(WeatherDaily)
@@ -263,6 +290,7 @@ def read_degree_days(
             upper_c=setting.upper_c,
             method=setting.method,
             start_date=setting.start_date,
+            override=setting.override,
         )
         for row in rows:
             gdd = _gdd_for_row(row, setting)
@@ -300,7 +328,101 @@ def read_degree_days(
         label=label,
         issued_at=_latest_issued_at(db, farm.id),
         stale=stale,
+        history_status=history_status,
     )
+
+
+def history_bounds(farm: Farm, *, today: date | None = None) -> tuple[date, date]:
+    """Inclusive window: 1 Jan of (year − HISTORY_YEARS) through today − 6 days.
+
+    The end lags the archive, which trails the forecast by several days.
+    ``today`` is a farm-local date.
+    """
+    current = today if today is not None else datetime.now(UTC).astimezone(_zone(farm)).date()
+    start = date(current.year - get_settings().history_years, 1, 1)
+    end = current - timedelta(days=ARCHIVE_LAG_DAYS)
+    return start, end
+
+
+def read_history_status(db: Session, farm: Farm) -> HistoryStatusOut:
+    """Report stored archive coverage. Does not fetch."""
+    span = db.execute(
+        select(
+            func.min(HistoryDaily.date),
+            func.max(HistoryDaily.date),
+            func.count(),
+            func.max(HistoryDaily.fetched_at),
+        ).where(HistoryDaily.farm_id == farm.id)
+    ).one()
+    first, last, days, fetched_at = span
+    count = int(days or 0)
+    if _history_inflight(farm.id):
+        status = "loading"
+    elif count == 0:
+        status = "empty"
+    else:
+        status = "ready"
+    return HistoryStatusOut(
+        years=history_years(db, farm),
+        from_date=first,
+        to_date=last,
+        days=count,
+        last_fetched_at=fetched_at,
+        status=status,
+    )
+
+
+def history_years(db: Session, farm: Farm) -> list[int]:
+    """Calendar years with at least 360 stored days."""
+    year = func.extract("year", HistoryDaily.date)
+    counted = db.execute(
+        select(year, func.count())
+        .where(HistoryDaily.farm_id == farm.id)
+        .group_by(year)
+        .order_by(year)
+    ).all()
+    return [int(value) for value, count in counted if int(count) >= COMPLETE_YEAR_DAYS]
+
+
+def history_average(db: Session, farm: Farm, month_day: date) -> CalendarDayAverage:
+    """Average stored tmin and tmax for one calendar day.
+
+    ``month_day`` supplies the month and day. 29 February uses 28 February
+    in non-leap years.
+    """
+    stored = db.scalars(select(HistoryDaily).where(HistoryDaily.farm_id == farm.id)).all()
+    rows = [CalendarDayTemps(day=row.date, tmin_c=row.tmin_c, tmax_c=row.tmax_c) for row in stored]
+    return average_by_calendar_day(rows, month_day.month, month_day.day)
+
+
+def history_backfill(db: Session, farm: Farm) -> HistoryStatusOut:
+    """Upsert missing archive days for this farm. A second call fetches nothing new."""
+    with _farm_lock(farm.id):
+        _set_holder(farm.id, threading.get_ident())
+        try:
+            _fill_history(db, farm)
+        finally:
+            _set_holder(farm.id, None)
+    return read_history_status(db, farm)
+
+
+def ensure_history(db: Session, farm: Farm) -> str:
+    """Backfill when the farm has no history.
+
+    Degree-day reads call this. Later phenology reads should call it too (T16b).
+    The wait is short. If the fetch is still running, the status is ``loading``
+    and the fetch continues.
+    """
+    if _history_inflight(farm.id):
+        _join_history(farm.id)
+        db.expire_all()
+        return read_history_status(db, farm).status
+    if _history_count(db, farm.id) > 0:
+        return "ready"
+    _start_history(farm.id)
+    _join_history(farm.id)
+    db.expire_all()
+    return read_history_status(db, farm).status
 
 
 def read_thresholds(db: Session, farm: Farm) -> ThresholdsOut:
@@ -394,6 +516,10 @@ def write_gdd_setting(
         row.upper_c = body.upper_c
         row.method = body.method
         row.start_date = body.start_date
+    db.flush()
+    from app.modules.phenology.service import recompute_crop
+
+    recompute_crop(db, farm.id, crop_id)
     db.commit()
     db.refresh(row)
     return GddSettingOut(
@@ -403,6 +529,80 @@ def write_gdd_setting(
         method=row.method,
         start_date=row.start_date,
     )
+
+
+def effective_gdd_setting(db: Session, block: Block) -> EffectiveGddSetting | None:
+    """Block override if present, else the crop setting of the block's crop, else none."""
+    override = _block_gdd_row(db, block)
+    if override is not None:
+        return _effective_from_block(override)
+    if block.crop_id is None:
+        return None
+    crop = _gdd_row(db, block.farm_id, block.crop_id)
+    if crop is None:
+        return None
+    return EffectiveGddSetting(
+        base_c=crop.base_c,
+        upper_c=crop.upper_c,
+        method=crop.method,
+        start_date=crop.start_date,
+        override=False,
+    )
+
+
+def read_block_gdd_setting(db: Session, block: Block) -> BlockGddSettingOut:
+    row = _block_gdd_row(db, block)
+    if row is None:
+        return BlockGddSettingOut(
+            block_id=block.id,
+            base_c=None,
+            upper_c=None,
+            method=None,
+            start_date=None,
+            version=None,
+        )
+    return _block_gdd_out(row)
+
+
+def write_block_gdd_setting(db: Session, block: Block, body: GddSettingIn) -> BlockGddSettingOut:
+    _validate_gdd(body)
+    row = _block_gdd_row(db, block)
+    if row is None:
+        row = GddSettingBlock(
+            farm_id=block.farm_id,
+            block_id=block.id,
+            base_c=body.base_c,
+            upper_c=body.upper_c,
+            method=body.method,
+            start_date=body.start_date,
+            version=1,
+        )
+        db.add(row)
+    else:
+        row.base_c = body.base_c
+        row.upper_c = body.upper_c
+        row.method = body.method
+        row.start_date = body.start_date
+        row.version += 1
+    db.flush()
+    from app.modules.phenology.service import recompute_block_seasons
+
+    recompute_block_seasons(db, block.id)
+    db.commit()
+    db.refresh(row)
+    return _block_gdd_out(row)
+
+
+def delete_block_gdd_setting(db: Session, block: Block) -> None:
+    row = _block_gdd_row(db, block)
+    if row is None:
+        raise AppError("gdd.block_setting_not_found", 404)
+    db.delete(row)
+    db.flush()
+    from app.modules.phenology.service import recompute_block_seasons
+
+    recompute_block_seasons(db, block.id)
+    db.commit()
 
 
 def season_start(today: date, marker: date) -> date:
@@ -465,7 +665,62 @@ def _gdd_row(db: Session, farm_id: uuid.UUID, crop_id: uuid.UUID) -> GddSetting 
     )
 
 
-def _gdd_for_row(row: WeatherDaily, setting: GddSetting) -> Decimal | None:
+def _block_gdd_row(db: Session, block: Block) -> GddSettingBlock | None:
+    return db.scalar(
+        select(GddSettingBlock).where(
+            GddSettingBlock.block_id == block.id,
+            GddSettingBlock.farm_id == block.farm_id,
+        )
+    )
+
+
+def _effective_from_block(row: GddSettingBlock) -> EffectiveGddSetting:
+    return EffectiveGddSetting(
+        base_c=row.base_c,
+        upper_c=row.upper_c,
+        method=row.method,
+        start_date=row.start_date,
+        override=True,
+    )
+
+
+def _block_gdd_out(row: GddSettingBlock) -> BlockGddSettingOut:
+    return BlockGddSettingOut(
+        block_id=row.block_id,
+        base_c=row.base_c,
+        upper_c=row.upper_c,
+        method=row.method,
+        start_date=row.start_date,
+        version=row.version,
+    )
+
+
+def _setting_for_degree_days(
+    db: Session,
+    farm: Farm,
+    crop_id: uuid.UUID,
+    block_id: uuid.UUID | None,
+) -> EffectiveGddSetting | None:
+    if block_id is None:
+        row = _gdd_row(db, farm.id, crop_id)
+        if row is None:
+            return None
+        return EffectiveGddSetting(
+            base_c=row.base_c,
+            upper_c=row.upper_c,
+            method=row.method,
+            start_date=row.start_date,
+            override=False,
+        )
+    block = db.get(Block, block_id)
+    if block is None or block.farm_id != farm.id:
+        raise AppError("block.not_found", 404)
+    if block.crop_id is not None and block.crop_id != crop_id:
+        raise AppError("block.not_found", 404)
+    return effective_gdd_setting(db, block)
+
+
+def _gdd_for_row(row: WeatherDaily, setting: EffectiveGddSetting) -> Decimal | None:
     if row.tmin_c is None or row.tmax_c is None:
         return None
     if setting.method == GddMethod.single_sine:
@@ -618,9 +873,147 @@ def _daily_values(
     }
 
 
+def _fill_history(db: Session, farm: Farm) -> None:
+    latitude, longitude = read_lat_lon(db, farm)
+    if latitude is None or longitude is None:
+        raise AppError("weather.location_required", 422)
+    start, end = history_bounds(farm)
+    if end < start:
+        return
+    present = set(
+        db.scalars(
+            select(HistoryDaily.date).where(
+                HistoryDaily.farm_id == farm.id,
+                HistoryDaily.date >= start,
+                HistoryDaily.date <= end,
+            )
+        ).all()
+    )
+    for gap_start, gap_end in _missing_ranges(start, end, present):
+        for chunk_start, chunk_end in year_chunks(gap_start, gap_end):
+            fetched = fetch_archive(
+                latitude,
+                longitude,
+                chunk_start,
+                chunk_end,
+                farm.timezone,
+            )
+            fetched_at = datetime.now(UTC)
+            rows = [
+                _history_row(farm.id, day, fetched_at)
+                for day in _archive_in_span(fetched, chunk_start, chunk_end)
+            ]
+            _upsert(db, HistoryDaily, rows, ("farm_id", "date"))
+            db.commit()
+
+
+def _history_row(farm_id: uuid.UUID, day: ArchiveDay, fetched_at: datetime) -> dict[str, object]:
+    return {
+        "farm_id": farm_id,
+        "date": day.day,
+        "tmin_c": day.tmin_c,
+        "tmax_c": day.tmax_c,
+        "rain_mm": day.rain_mm,
+        "et0_mm": day.et0_mm,
+        "source": SOURCE,
+        "fetched_at": fetched_at,
+    }
+
+
+def _archive_in_span(days: Sequence[ArchiveDay], start: date, end: date) -> list[ArchiveDay]:
+    by_day: dict[date, ArchiveDay] = {}
+    for day in days:
+        if start <= day.day <= end:
+            by_day[day.day] = day
+    return [by_day[key] for key in sorted(by_day)]
+
+
+def _missing_ranges(start: date, end: date, present: set[date]) -> list[tuple[date, date]]:
+    ranges: list[tuple[date, date]] = []
+    gap_start: date | None = None
+    day = start
+    while day <= end:
+        if day not in present:
+            if gap_start is None:
+                gap_start = day
+        elif gap_start is not None:
+            ranges.append((gap_start, day - timedelta(days=1)))
+            gap_start = None
+        day += timedelta(days=1)
+    if gap_start is not None:
+        ranges.append((gap_start, end))
+    return ranges
+
+
+def _history_count(db: Session, farm_id: uuid.UUID) -> int:
+    counted = db.scalar(
+        select(func.count()).select_from(HistoryDaily).where(HistoryDaily.farm_id == farm_id)
+    )
+    return int(counted or 0)
+
+
+def _farm_lock(farm_id: uuid.UUID) -> threading.Lock:
+    with _state_guard:
+        lock = _farm_locks.get(farm_id)
+        if lock is None:
+            lock = threading.Lock()
+            _farm_locks[farm_id] = lock
+        return lock
+
+
+def _set_holder(farm_id: uuid.UUID, ident: int | None) -> None:
+    with _state_guard:
+        if ident is None:
+            _holders.pop(farm_id, None)
+        else:
+            _holders[farm_id] = ident
+
+
+def _history_inflight(farm_id: uuid.UUID) -> bool:
+    with _state_guard:
+        holder = _holders.get(farm_id)
+    return holder is not None and holder != threading.get_ident()
+
+
+def _start_history(farm_id: uuid.UUID) -> None:
+    with _state_guard:
+        current = _jobs.get(farm_id)
+        if current is not None and current.is_alive():
+            return
+        thread = threading.Thread(
+            target=_history_worker,
+            args=(farm_id,),
+            name=f"history-{farm_id}",
+            daemon=True,
+        )
+        _jobs[farm_id] = thread
+        thread.start()
+
+
+def _join_history(farm_id: uuid.UUID) -> None:
+    thread = _jobs.get(farm_id)
+    if thread is not None:
+        thread.join(HISTORY_ENSURE_TIMEOUT_S)
+
+
+def _history_worker(farm_id: uuid.UUID) -> None:
+    db = SessionLocal()
+    try:
+        farm = db.get(Farm, farm_id)
+        if farm is None:
+            return
+        try:
+            history_backfill(db, farm)
+        except (WeatherProviderError, AppError):
+            logger.warning("open-meteo archive backfill failed for farm %s", farm_id)
+            db.rollback()
+    finally:
+        db.close()
+
+
 def _upsert(
     db: Session,
-    model: type[WeatherHourly] | type[WeatherDaily],
+    model: type[WeatherHourly] | type[WeatherDaily] | type[HistoryDaily],
     rows: list[dict[str, object]],
     pk: tuple[str, ...],
 ) -> None:

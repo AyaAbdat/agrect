@@ -1,0 +1,9 @@
+{
+  "daily": {
+    "time": ["2020-01-01", "2020-01-02", "2020-01-03"],
+    "temperature_2m_max": [18.5, 19.0, null],
+    "temperature_2m_min": [4.5, 5.25, 3.0],
+    "precipitation_sum": [0.0, 1.25, 0.5],
+    "et0_fao_evapotranspiration": [2.5, 2.0, null]
+  }
+}

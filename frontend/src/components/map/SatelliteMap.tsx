@@ -335,7 +335,8 @@ export function SatelliteMap({
   initial,
   onChange,
 }: SatelliteMapProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const zoomAt = i18n.dir() === "rtl" ? "topleft" : "topright"
   const { currentFarmId } = useAuth()
   const farmQuery = useQuery({
     queryKey: ["farm", currentFarmId],
@@ -390,7 +391,7 @@ export function SatelliteMap({
           className="h-full w-full"
         >
           <TileLayer url={TILES} maxZoom={19} attribution={ATTRIBUTION} />
-          <ZoomControl position="bottomleft" />
+          <ZoomControl key={zoomAt} position={zoomAt} />
           {drawing ? (
             <DrawController
               tool={tool}

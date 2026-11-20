@@ -128,7 +128,11 @@ export function BlockWizardPage() {
   return (
     <div className="flex flex-col gap-5">
       <header>
-        <p className={crumbClass}>{t("blocks.wizardCrumb")}</p>
+        <p className={crumbClass}>
+          {blockId === undefined
+            ? t("blocks.wizardCrumb")
+            : t("blocks.wizardEditCrumb", { name: block?.name ?? t("common.loading") })}
+        </p>
         <h1 className="text-[24px] font-bold leading-tight">{t(current.titleKey)}</h1>
         <p className="mt-1 text-mut">
           {t("blocks.stepOf", { n: step, name: t(current.labelKey) })}

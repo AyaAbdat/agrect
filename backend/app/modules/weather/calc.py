@@ -5,8 +5,11 @@ no trig functions (D-046). Inputs and outputs stay ``Decimal``, and the
 single-sine result is quantized to 0.0001 °C·day.
 """
 
+import calendar
 import math
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
+from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 
 # FAO-56 equation 11 (Tetens / Magnus) constants.
@@ -210,6 +213,55 @@ def count_hours_at_or_above(temps: Sequence[Decimal], threshold: Decimal) -> int
     Source: AGRECT farm heat hours (threshold is the grower-entered heat setting).
     """
     return sum(1 for temp in temps if temp >= threshold)
+
+
+@dataclass(frozen=True, slots=True)
+class CalendarDayTemps:
+    day: date
+    tmin_c: Decimal | None
+    tmax_c: Decimal | None
+
+
+@dataclass(frozen=True, slots=True)
+class CalendarDayAverage:
+    tmin_c: Decimal | None
+    tmax_c: Decimal | None
+
+
+def average_by_calendar_day(
+    rows: Sequence[CalendarDayTemps],
+    month: int,
+    day: int,
+) -> CalendarDayAverage:
+    """Mean daily minimum and maximum on one calendar day across years.
+
+    mean = Σ value / n, skipping nulls. Each year contributes at most one day.
+
+    29 February uses that date in a leap year and 28 February otherwise.
+
+    Source: AGRECT archive history, same-calendar-day average across stored years.
+    """
+    by_day = {row.day: row for row in rows}
+    if month == 2 and day == 29:
+        chosen: list[CalendarDayTemps] = []
+        for year in sorted({row.day.year for row in rows}):
+            sample = date(year, 2, 29) if calendar.isleap(year) else date(year, 2, 28)
+            found = by_day.get(sample)
+            if found is not None:
+                chosen.append(found)
+    else:
+        chosen = [row for row in by_day.values() if row.day.month == month and row.day.day == day]
+    return CalendarDayAverage(
+        tmin_c=_mean(row.tmin_c for row in chosen),
+        tmax_c=_mean(row.tmax_c for row in chosen),
+    )
+
+
+def _mean(values: Iterable[Decimal | None]) -> Decimal | None:
+    present = [value for value in values if value is not None]
+    if not present:
+        return None
+    return sum(present, Decimal(0)) / Decimal(len(present))
 
 
 def chill_hours(temps: Sequence[Decimal]) -> int:

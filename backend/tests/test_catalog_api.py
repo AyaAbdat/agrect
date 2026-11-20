@@ -114,6 +114,7 @@ def test_catalog_requires_token(client: TestClient) -> None:
         "/v1/catalog/crops",
         f"/v1/catalog/crops/{missing}/varieties",
         f"/v1/catalog/crops/{missing}/training-systems",
+        f"/v1/catalog/crops/{missing}/stages",
         "/v1/catalog/soil-textures",
     ]
     for path in paths:
@@ -130,7 +131,7 @@ def test_unknown_crop(
     user = make_user("catalog@agrect.app", "catalog-password")
     headers = auth_header(user)
     missing = uuid.uuid4()
-    for path in ("varieties", "training-systems"):
+    for path in ("varieties", "training-systems", "stages"):
         response = client.get(f"/v1/catalog/crops/{missing}/{path}", headers=headers)
         assert response.status_code == 404
         assert response.json() == {"code": "catalog.crop_not_found"}

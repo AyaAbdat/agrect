@@ -78,3 +78,93 @@ sandy_clay_loam, clay_loam and sandy_clay are not in Table 19. Their theta value
 | sandy_clay_loam, all theta null, citation null, fr Loam argilo-sableux, ar طميية طينية رملية, en Sandy clay loam | m3/m3 | not in FAO-56 Table 19 | cited |
 | clay_loam, all theta null, citation null, fr Loam argileux, ar طميية طينية, en Clay loam | m3/m3 | not in FAO-56 Table 19 | cited |
 | sandy_clay, all theta null, citation null, fr Argile sableuse, ar طينية رملية, en Sandy clay | m3/m3 | not in FAO-56 Table 19 | cited |
+
+## stages.yaml
+
+English names are the published stage names. French and Modern Standard Arabic are draft translations for sign-off. The plain name is stored on its own; the code is separate. Descriptions in the YAML restate the same stage in one sentence, in the three languages.
+
+stage_dd.yaml and variety_chill.yaml are empty lists. A global degree-day or chill value is loaded only with a full citation: author, year, title or journal, and table or page. Leave the list empty when unsure; the app then shows Not enough data.
+
+### table_grape
+
+scale `el`. Coombe B.G. (1995). Adoption of a system for identifying grapevine growth stages. Aust. J. Grape Wine Res. 1:100–110 (modified E-L)
+
+| crop | code | fr | ar | en | status |
+| --- | --- | --- | --- | --- | --- |
+| table_grape | 1 | Bourgeon d'hiver | برعم شتوي | Winter bud | draft |
+| table_grape | 4 | Débourrement (pointes des feuilles visibles) | تفتح البراعم (أطراف الأوراق ظاهرة) | Budburst (leaf tips visible) | draft |
+| table_grape | 12 | Cinq feuilles séparées, inflorescence dégagée | خمس أوراق منفصلة، والنورة الزهرية واضحة | Five leaves separated, inflorescence clear | draft |
+| table_grape | 19 | Début de floraison | بداية الإزهار | Beginning of flowering | draft |
+| table_grape | 23 | Pleine floraison (50 % des capuchons tombés) | إزهار كامل (سقوط 50٪ من القلنسوات) | Full bloom (50 % caps off) | draft |
+| table_grape | 27 | Nouaison | عقد الثمار | Fruit set | draft |
+| table_grape | 31 | Baies de la taille d'un pois | حبات بحجم حبة البازلاء | Berries pea-size | draft |
+| table_grape | 35 | Véraison (les baies commencent à se colorer et à ramollir) | بداية التلوّن (تبدأ الحبات بالتلوّن واللين) | Veraison (berries begin to colour and soften) | draft |
+| table_grape | 38 | Maturité de récolte | نضج القطاف | Harvest-ripe | draft |
+
+### apple
+
+scale `bbch`. Meier U. (ed.) (2001). Growth stages of mono- and dicotyledonous plants. BBCH Monograph, 2nd ed. (pome fruit)
+
+| crop | code | fr | ar | en | status |
+| --- | --- | --- | --- | --- | --- |
+| apple | 00 | Dormance | سكون | Dormancy | draft |
+| apple | 07 | Début du débourrement | بداية تفتح البراعم | Beginning of bud break | draft |
+| apple | 53 | Débourrement (pointe verte) | تفتح البرعم (طرف أخضر) | Bud burst (green tip) | draft |
+| apple | 57 | Bouton rose | البرعم الوردي | Pink bud | draft |
+| apple | 65 | Pleine floraison | الإزهار الكامل | Full flowering | draft |
+| apple | 69 | Fin de floraison | نهاية الإزهار | End of flowering | draft |
+| apple | 71 | Nouaison (fruit jusqu'à 10 mm) | عقد الثمار (ثمرة حتى 10 مم) | Fruit set (fruit up to 10 mm) | draft |
+| apple | 81 | Début de la maturation | بداية النضج | Beginning of ripening | draft |
+| apple | 87 | Maturité de cueillette | نضج القطاف | Ripe for picking | draft |
+
+### olive
+
+scale `bbch_olive`. Sanz-Cortés F. et al. (2002). Phenological growth stages of olive trees (Olea europaea). Ann. Appl. Biol. 140:151–157
+
+| crop | code | fr | ar | en | status |
+| --- | --- | --- | --- | --- | --- |
+| olive | 00 | Dormance hivernale | سكون شتوي | Winter dormancy | draft |
+| olive | 07 | Début du développement des pousses | بداية نمو الأفرع | Beginning of shoot development | draft |
+| olive | 51 | Les bourgeons d'inflorescence commencent à gonfler | براعم النورة تبدأ بالانتفاخ | Inflorescence buds start to swell | draft |
+| olive | 55 | Inflorescence en élongation | استطالة النورة | Inflorescence expanding | draft |
+| olive | 61 | Début de floraison | بداية الإزهار | Beginning of flowering | draft |
+| olive | 65 | Pleine floraison | الإزهار الكامل | Full flowering | draft |
+| olive | 69 | Fin de floraison, nouaison | نهاية الإزهار وعقد الثمار | End of flowering, fruit set | draft |
+| olive | 81 | Début de la coloration des fruits | بداية تلوّن الثمار | Beginning of fruit colouring | draft |
+| olive | 89 | Maturité de récolte | نضج القطاف | Harvest ripeness | draft |
+
+### wheat
+
+scale `zadoks`. Zadoks J.C., Chang T.T., Konzak C.F. (1974). A decimal code for the growth stages of cereals. Weed Res. 14:415–421
+
+| crop | code | fr | ar | en | status |
+| --- | --- | --- | --- | --- | --- |
+| wheat | 10 | Première feuille à travers le coléoptile | الورقة الأولى خارجة من غمد الريشة | First leaf through coleoptile | draft |
+| wheat | 21 | Début du tallage | بداية الإشطاء | Beginning of tillering | draft |
+| wheat | 30 | Début de la montaison (redressement de la pseudo-tige) | بداية استطالة الساق (انتصاب الساق الكاذبة) | Stem elongation begins (pseudo-stem erection) | draft |
+| wheat | 31 | Premier nœud décelable | العقدة الأولى محسوسة | First node detectable | draft |
+| wheat | 37 | Dernière feuille juste visible | ورقة العلم بدأت بالظهور | Flag leaf just visible | draft |
+| wheat | 45 | Gaine gonflée | الغمد منتفخ | Boot swollen | draft |
+| wheat | 55 | Moitié de l'épi sortie | نصف السنبلة ظاهرة | Half of head emerged | draft |
+| wheat | 65 | Anthèse à mi-parcours | منتصف الإزهار | Anthesis half-way | draft |
+| wheat | 75 | Grain au stade laiteux moyen | الطور الحليبي المتوسط | Medium milk | draft |
+| wheat | 85 | Grain au stade pâteux mou | الطور العجيني الطري | Soft dough | draft |
+| wheat | 92 | Grain mûr (grain dur) | نضج (الحبة صلبة) | Ripe (grain hard) | draft |
+
+### barley
+
+scale `zadoks`. Zadoks J.C., Chang T.T., Konzak C.F. (1974). A decimal code for the growth stages of cereals. Weed Res. 14:415–421
+
+| crop | code | fr | ar | en | status |
+| --- | --- | --- | --- | --- | --- |
+| barley | 10 | Première feuille à travers le coléoptile | الورقة الأولى خارجة من غمد الريشة | First leaf through coleoptile | draft |
+| barley | 21 | Début du tallage | بداية الإشطاء | Beginning of tillering | draft |
+| barley | 30 | Début de la montaison (redressement de la pseudo-tige) | بداية استطالة الساق (انتصاب الساق الكاذبة) | Stem elongation begins (pseudo-stem erection) | draft |
+| barley | 31 | Premier nœud décelable | العقدة الأولى محسوسة | First node detectable | draft |
+| barley | 37 | Dernière feuille juste visible | ورقة العلم بدأت بالظهور | Flag leaf just visible | draft |
+| barley | 45 | Gaine gonflée | الغمد منتفخ | Boot swollen | draft |
+| barley | 55 | Moitié de l'épi sortie | نصف السنبلة ظاهرة | Half of head emerged | draft |
+| barley | 65 | Anthèse à mi-parcours | منتصف الإزهار | Anthesis half-way | draft |
+| barley | 75 | Grain au stade laiteux moyen | الطور الحليبي المتوسط | Medium milk | draft |
+| barley | 85 | Grain au stade pâteux mou | الطور العجيني الطري | Soft dough | draft |
+| barley | 92 | Grain mûr (grain dur) | نضج (الحبة صلبة) | Ripe (grain hard) | draft |

@@ -12,8 +12,9 @@ import { UNIT_HOURS } from "../../lib/units"
 import { GddChart } from "./charts"
 import { asNumber, farmToday, formatAxisDate, formatMediumDate } from "./format"
 import { ThresholdsDrawer } from "./ThresholdsDrawer"
-import type { DegreeDays, FarmWeather, ForecastOut, GddPoint, GddSetting } from "./types"
+import type { BlockGddSetting, DegreeDays, FarmWeather, ForecastOut, GddPoint, GddSetting } from "./types"
 import {
+  BlockOverrideTag,
   FormulaTip,
   PageHeader,
   PageSkeleton,
@@ -47,25 +48,40 @@ export function DegreeDaysPage() {
     enabled: farmId !== null,
   })
   const cropId = blockQuery.data?.crop?.id ?? null
+  const blockSettingQuery = useQuery({
+    queryKey: ["block-gdd-setting", blockId],
+    queryFn: () => apiGet<BlockGddSetting>(`/v1/blocks/${blockId}/gdd-setting`),
+    enabled: blockId !== undefined,
+  })
   const settingQuery = useQuery({
     queryKey: ["gdd-setting", farmId, cropId],
     queryFn: () => apiGet<GddSetting>(`/v1/farms/${farmId}/gdd-settings/${cropId}`),
     enabled: farmId !== null && cropId !== null,
   })
-  const ready = settingQuery.data?.method != null && settingQuery.data.start_date != null
+  const blockSetting = blockSettingQuery.data
+  const override =
+    blockSetting !== undefined && blockSetting.method !== null ? blockSetting : null
+  const effectiveMethod = override !== null ? override.method : settingQuery.data?.method
+  const effectiveStart = override !== null ? override.start_date : settingQuery.data?.start_date
+  const ready = effectiveMethod != null && effectiveStart != null
   const degreeQuery = useQuery({
-    queryKey: ["weather", farmId, "degree-days", cropId],
-    queryFn: () => apiGet<DegreeDays>(`/v1/farms/${farmId}/weather/degree-days?crop_id=${cropId}`),
-    enabled: farmId !== null && cropId !== null && ready,
+    queryKey: ["weather", farmId, "degree-days", cropId, blockId],
+    queryFn: () =>
+      apiGet<DegreeDays>(
+        `/v1/farms/${farmId}/weather/degree-days?crop_id=${cropId}&block_id=${blockId}`,
+      ),
+    enabled: farmId !== null && cropId !== null && blockId !== undefined && ready,
   })
 
   if (farmId === null || blockId === undefined) return null
+  const waitingForBlockSetting = blockId !== undefined && blockSettingQuery.isPending
   const waitingForSetting = cropId !== null && settingQuery.isPending
   const waitingForDegree = ready && degreeQuery.isPending
   if (
     blockQuery.isPending ||
     farmQuery.isPending ||
     forecastQuery.isPending ||
+    waitingForBlockSetting ||
     waitingForSetting ||
     waitingForDegree
   ) {
@@ -75,6 +91,7 @@ export function DegreeDaysPage() {
     blockQuery.isError ||
     farmQuery.isError ||
     forecastQuery.isError ||
+    blockSettingQuery.isError ||
     settingQuery.isError ||
     degreeQuery.isError ||
     blockQuery.data === undefined ||
@@ -203,13 +220,16 @@ function DegreeBody({
     setting?.method === "single_sine" ? t("weather.singleSine") : t("weather.simpleAverage")
   return (
     <div className="mt-3">
-      <p className="text-[13px] text-mut">
-        {t("weather.settingSummary", {
-          base: formatNumber(asNumber(setting?.base_c), 1, lang),
-          upper: formatNumber(asNumber(setting?.upper_c), 1, lang),
-          method,
-          since: formatMediumDate(degree.from, lang),
-        })}
+      <p className="flex flex-wrap items-center gap-2 text-[13px] text-mut">
+        <span>
+          {t("weather.settingSummary", {
+            base: formatNumber(asNumber(setting?.base_c), 1, lang),
+            upper: formatNumber(asNumber(setting?.upper_c), 1, lang),
+            method,
+            since: formatMediumDate(degree.from, lang),
+          })}
+        </span>
+        {setting?.override === true ? <BlockOverrideTag /> : null}
       </p>
       <p className="mt-3 flex items-center gap-2">
         <span className="text-[40px] font-bold leading-none">

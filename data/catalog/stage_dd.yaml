@@ -1,0 +1,3 @@
+# Only values with a full citation: author, year, title/journal, table or page.
+# Leave empty when unsure; the app then shows Not enough data.
+stage_dd: []

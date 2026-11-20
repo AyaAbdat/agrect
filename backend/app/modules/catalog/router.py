@@ -3,17 +3,29 @@ import uuid
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
 
-from app.core.deps import Db
+from app.core.deps import CurrentFarm, CurrentUser, Db
 from app.core.errors import AppError
 from app.core.security import get_current_user
 from app.modules.catalog.models import Crop, SoilTextureClass, TrainingSystem, Variety
 from app.modules.catalog.schemas import (
     CropOut,
+    CropStagesOut,
     LocalizedName,
     SoilTextureOut,
+    StageDdOut,
+    StageDdPut,
+    StagePrefsOut,
+    StagePrefsPut,
     TrainingSystemOut,
     VarietyOut,
     format_theta,
+)
+from app.modules.catalog.service import (
+    read_crop_stages,
+    read_stage_dd,
+    read_stage_prefs,
+    write_stage_dd,
+    write_stage_prefs,
 )
 
 router = APIRouter(
@@ -76,6 +88,11 @@ def list_training_systems(crop_id: uuid.UUID, db: Db) -> list[TrainingSystemOut]
     ]
 
 
+@router.get("/crops/{crop_id}/stages", response_model=CropStagesOut)
+def list_stages(crop_id: uuid.UUID, db: Db) -> CropStagesOut:
+    return read_crop_stages(db, crop_id)
+
+
 @router.get("/soil-textures", response_model=list[SoilTextureOut])
 def list_soil_textures(db: Db) -> list[SoilTextureOut]:
     rows = db.scalars(select(SoilTextureClass).order_by(SoilTextureClass.sort)).all()
@@ -104,3 +121,26 @@ def _soil_out(row: SoilTextureClass) -> SoilTextureOut:
         citation=row.citation,
         source="entered" if all(value is not None for value in values) else None,
     )
+
+
+farm_router = APIRouter(prefix="/farms/{farm_id}", tags=["phenology"])
+
+
+@farm_router.get("/stage-dd", response_model=StageDdOut)
+def get_stage_dd(farm: CurrentFarm, db: Db, crop_id: uuid.UUID) -> StageDdOut:
+    return read_stage_dd(db, farm, crop_id)
+
+
+@farm_router.put("/stage-dd", response_model=StageDdOut)
+def put_stage_dd(body: StageDdPut, farm: CurrentFarm, user: CurrentUser, db: Db) -> StageDdOut:
+    return write_stage_dd(db, farm, user, body)
+
+
+@farm_router.get("/stage-prefs", response_model=StagePrefsOut)
+def get_stage_prefs(farm: CurrentFarm, db: Db, crop_id: uuid.UUID) -> StagePrefsOut:
+    return read_stage_prefs(db, farm, crop_id)
+
+
+@farm_router.put("/stage-prefs", response_model=StagePrefsOut)
+def put_stage_prefs(body: StagePrefsPut, farm: CurrentFarm, db: Db) -> StagePrefsOut:
+    return write_stage_prefs(db, farm, body)

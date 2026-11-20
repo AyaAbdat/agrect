@@ -9,12 +9,21 @@ import { apiGet } from "../../lib/api"
 import { formatNumber } from "../../lib/format"
 import { crumbClass } from "../../lib/navStyles"
 import { UNIT_MM, UNIT_TEMP_C, UNIT_WIND_M_S } from "../../lib/units"
-import { activeLang, cropLabel, type BlockListItem, type BlockStatus } from "../blocks/types"
+import { activeLang, cropLabel, localizedName, type BlockListItem, type BlockStatus } from "../blocks/types"
 import { runParts } from "../soilwater/display"
 import type { FarmIrrigationToday, IrrigationToday } from "../soilwater/types"
-import { asNumber, farmLocalNow, formatHour, formatLongDate, formatWeekdayDate } from "../weather/format"
+import { asNumber, farmLocalNow, formatHour, formatLongDate, formatMediumDate, formatWeekdayDate } from "../weather/format"
+import type { StageSummary, SummaryBlock } from "../stages/types"
 import { ThresholdsDrawer } from "../weather/ThresholdsDrawer"
-import type { DegreeDays, ForecastDay, ForecastOut, GddSettingListItem, NowOut, Thresholds } from "../weather/types"
+import type {
+  BlockGddSetting,
+  DegreeDays,
+  ForecastDay,
+  ForecastOut,
+  GddSettingListItem,
+  NowOut,
+  Thresholds,
+} from "../weather/types"
 import { PageHeader, SourceTag, cardClass, outlineBtn, primaryBtn } from "../weather/ui"
 
 type FarmToday = {
@@ -23,7 +32,7 @@ type FarmToday = {
 }
 
 const rowClass =
-  "grid grid-cols-[1.75rem_minmax(140px,1.4fr)_auto_auto_auto_auto_minmax(150px,auto)_auto] items-center gap-x-3 px-1 py-3 text-start"
+  "grid grid-cols-[1.75rem_minmax(120px,1.2fr)_auto_auto_auto_auto_minmax(110px,auto)_minmax(120px,auto)_minmax(140px,auto)_auto] items-center gap-x-3 px-1 py-3 text-start"
 
 function greetingKey(hour: number): "today.morning" | "today.afternoon" | "today.evening" {
   if (hour >= 5 && hour < 12) return "today.morning"
@@ -274,36 +283,84 @@ function AlertsCard({
   )
 }
 
-function useCropTotals(farmId: string, cropIds: string[]) {
+function useBlockTotals(farmId: string, blocks: BlockListItem[]) {
+  const cropIds = [
+    ...new Set(blocks.flatMap((block) => (block.crop === null ? [] : [block.crop.id]))),
+  ].sort()
   const settingsQuery = useQuery({
     queryKey: ["gdd-settings", farmId],
     queryFn: () => apiGet<GddSettingListItem[]>(`/v1/farms/${farmId}/gdd-settings`),
     enabled: cropIds.length > 0,
   })
+  const overrideQueries = useQueries({
+    queries: blocks.map((block) => ({
+      queryKey: ["block-gdd-setting", block.id],
+      queryFn: () => apiGet<BlockGddSetting>(`/v1/blocks/${block.id}/gdd-setting`),
+    })),
+  })
+  const overridesReady = overrideQueries.every((query) => query.isSuccess)
+  const settingsReady = cropIds.length === 0 || settingsQuery.isSuccess
   const startIds = new Set(
     (settingsQuery.data ?? [])
       .filter((row) => row.start_date !== null)
       .map((row) => row.crop_id),
   )
-  const gddIds = settingsQuery.isSuccess ? cropIds.filter((id) => startIds.has(id)) : []
+  const jobs: { key: readonly string[]; url: string; blockIds: string[] }[] = []
+  if (overridesReady && settingsReady) {
+    const byCrop = new Map<string, string[]>()
+    blocks.forEach((block, index) => {
+      const override = overrideQueries[index]?.data
+      const cropId = block.crop?.id ?? null
+      if (override?.method != null) {
+        if (override.start_date !== null && cropId !== null) {
+          jobs.push({
+            key: ["weather", farmId, "degree-days", cropId, block.id],
+            url: `/v1/farms/${farmId}/weather/degree-days?crop_id=${cropId}&block_id=${block.id}`,
+            blockIds: [block.id],
+          })
+        }
+        return
+      }
+      if (cropId !== null && startIds.has(cropId)) {
+        const listed = byCrop.get(cropId) ?? []
+        listed.push(block.id)
+        byCrop.set(cropId, listed)
+      }
+    })
+    for (const [cropId, blockIds] of byCrop) {
+      jobs.push({
+        key: ["weather", farmId, "degree-days", cropId],
+        url: `/v1/farms/${farmId}/weather/degree-days?crop_id=${cropId}`,
+        blockIds,
+      })
+    }
+  }
   const gddQueries = useQueries({
-    queries: gddIds.map((cropId) => ({
-      queryKey: ["weather", farmId, "degree-days", cropId],
-      queryFn: () =>
-        apiGet<DegreeDays>(`/v1/farms/${farmId}/weather/degree-days?crop_id=${cropId}`),
+    queries: jobs.map((job) => ({
+      queryKey: job.key,
+      queryFn: () => apiGet<DegreeDays>(job.url),
     })),
   })
   const totals = new Map<string, DegreeDays>()
-  gddIds.forEach((cropId, index) => {
+  jobs.forEach((job, index) => {
     const row = gddQueries[index]?.data
-    if (row !== undefined) totals.set(cropId, row)
+    if (row !== undefined) {
+      for (const blockId of job.blockIds) totals.set(blockId, row)
+    }
   })
   return {
     totals,
-    loading: settingsQuery.isLoading || gddQueries.some((query) => query.isLoading),
-    error: settingsQuery.isError || gddQueries.some((query) => query.isError),
+    loading:
+      (cropIds.length > 0 && settingsQuery.isLoading) ||
+      overrideQueries.some((query) => query.isLoading) ||
+      gddQueries.some((query) => query.isLoading),
+    error:
+      settingsQuery.isError ||
+      overrideQueries.some((query) => query.isError) ||
+      gddQueries.some((query) => query.isError),
     retry: () => {
       void settingsQuery.refetch()
+      for (const query of overrideQueries) void query.refetch()
       for (const query of gddQueries) void query.refetch()
     },
   }
@@ -353,16 +410,41 @@ function irrigateLine(
   return label(formatNumber(asNumber(dose?.gross_mm), 2, lang), run.hours, run.minutes)
 }
 
+function useStageNow(farmId: string, cropIds: string[]) {
+  const queries = useQueries({
+    queries: cropIds.map((cropId) => ({
+      queryKey: ["stage-summary", farmId, cropId],
+      queryFn: () => apiGet<StageSummary>(`/v1/farms/${farmId}/stages/summary?crop_id=${cropId}`),
+    })),
+  })
+  const byBlock = new Map<string, SummaryBlock>()
+  for (const query of queries) {
+    for (const block of query.data?.blocks ?? []) byBlock.set(block.block_id, block)
+  }
+  return {
+    byBlock,
+    loading: cropIds.length > 0 && queries.some((query) => query.isLoading),
+    error: queries.some((query) => query.isError),
+    retry: () => {
+      for (const query of queries) void query.refetch()
+    },
+  }
+}
+
 function BlockRows({
   blocks,
   lang,
   totals,
+  stages,
+  stagesLoading,
   irrigate,
   irrigateLoading,
 }: {
   blocks: BlockListItem[]
   lang: string
   totals: Map<string, DegreeDays>
+  stages: Map<string, SummaryBlock>
+  stagesLoading: boolean
   irrigate: Map<string, FarmIrrigationToday["blocks"][number]>
   irrigateLoading: boolean
 }) {
@@ -370,17 +452,19 @@ function BlockRows({
   const missing = t("common.missing")
   return (
     <div className="mt-2 overflow-x-auto">
-      <div className={`${rowClass} min-w-[860px] py-1 text-[11px] font-semibold uppercase tracking-wide text-mut`}>
+      <div className={`${rowClass} min-w-[1040px] py-1 text-[11px] font-semibold uppercase tracking-wide text-mut`}>
         <span />
         <span />
         <span />
         <span />
         <span />
         <span />
+        <span>{t("today.stageNow")}</span>
+        <span>{t("today.next")}</span>
         <span>{t("today.irrigateToday")}</span>
         <span />
       </div>
-      <ul className="min-w-[860px]">
+      <ul className="min-w-[1040px]">
         {blocks.map((block, index) => {
           const crop = cropLabel(block.crop, lang) ?? missing
           const area =
@@ -399,8 +483,7 @@ function BlockRows({
             block.rate_mm_h === null
               ? missing
               : `${show(block.rate_mm_h, 2, lang)} ${t("blocks.unitMmh")}`
-          const cropId = block.crop?.id ?? null
-          const degree = cropId === null ? undefined : totals.get(cropId)
+          const degree = totals.get(block.id)
           let gdd = missing
           let hasTotal = false
           if (
@@ -412,6 +495,19 @@ function BlockRows({
             gdd = `${show(degree.gdd_total, 1, lang)} ${t("weather.unitCday")}`
           }
           const advice = irrigate.get(block.id)
+          const stage = stages.get(block.id)
+          const nowName =
+            stage?.current_stage === null || stage?.current_stage === undefined
+              ? missing
+              : localizedName(stage.current_stage.name, lang)
+          const nextName =
+            stage?.next_stage === null || stage?.next_stage === undefined
+              ? missing
+              : localizedName(stage.next_stage.stage.name, lang)
+          const nextDate =
+            stage?.next_stage === null || stage?.next_stage === undefined
+              ? null
+              : formatMediumDate(stage.next_stage.date, lang)
           return (
             <li key={block.id} className={`${rowClass} border-b border-line hover:bg-[#F7F8F7] last:border-b-0`}>
               <Link to={`/blocks/${block.id}/setup`} className="contents">
@@ -433,23 +529,46 @@ function BlockRows({
                   <span className={hasTotal ? "font-semibold" : "text-mut"}>{gdd}</span>
                   {hasTotal ? <SourceTag kind="calculated" /> : null}
                 </span>
-                <span className="col-start-8">
+                <span className="col-start-7 min-w-0 text-[12px]">
+                  {stagesLoading ? (
+                    <span className="block h-4 w-16 animate-pulse rounded bg-[#E5E7EB]" />
+                  ) : (
+                    <span className="block truncate">{nowName}</span>
+                  )}
+                </span>
+                <span className="col-start-8 min-w-0 text-[12px]">
+                  {stagesLoading ? (
+                    <span className="block h-4 w-20 animate-pulse rounded bg-[#E5E7EB]" />
+                  ) : (
+                    <span className="block">
+                      <span className="block truncate">{nextName}</span>
+                      {nextDate !== null ? <span className="block text-mut">{nextDate}</span> : null}
+                    </span>
+                  )}
+                </span>
+                <span className="col-start-10">
                   <StatusTag status={block.status} />
                 </span>
               </Link>
               <Link
                 to={`/blocks/${block.id}/soil-water`}
-                className="col-start-7 row-start-1 flex flex-col items-start gap-1"
+                className="col-start-9 row-start-1 flex flex-col items-start gap-1"
               >
                 {irrigateLoading ? (
                   <span className="h-8 w-28 animate-pulse rounded bg-[#E5E7EB]" />
                 ) : (
                   <>
                     <IrrigateMark status={advice?.status} />
-                    <span className="whitespace-nowrap text-[12px]">
+                    <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[12px]">
                       {irrigateLine(advice, lang, (gross, hours, minutes) =>
                         t("today.irrigateDose", { gross, hours, minutes }),
                       )}
+                      {asNumber(
+                        (advice?.recommended === "refill" ? advice.refill : advice?.maintain)
+                          ?.gross_mm,
+                      ) !== null ? (
+                        <SourceTag kind="calculated" />
+                      ) : null}
                     </span>
                   </>
                 )}
@@ -499,7 +618,8 @@ function BlocksCard({ farmId, lang }: { farmId: string; lang: string }) {
   const cropIds = [
     ...new Set(blocks.flatMap((block) => (block.crop === null ? [] : [block.crop.id]))),
   ].sort()
-  const degree = useCropTotals(farmId, cropIds)
+  const degree = useBlockTotals(farmId, blocks)
+  const stages = useStageNow(farmId, cropIds)
   const loading = blocksQuery.isLoading || (cropIds.length > 0 && degree.loading && !degree.error)
   return (
     <section className={`${cardClass} min-w-0 flex-1`}>
@@ -518,11 +638,18 @@ function BlocksCard({ farmId, lang }: { farmId: string; lang: string }) {
           <InlineError onRetry={() => void irrigateQuery.refetch()} />
         </div>
       ) : null}
+      {!loading && blocksQuery.isSuccess && blocks.length > 0 && stages.error ? (
+        <div className="mt-3">
+          <InlineError onRetry={stages.retry} />
+        </div>
+      ) : null}
       {!loading && blocksQuery.isSuccess && blocks.length > 0 ? (
         <BlockRows
           blocks={blocks}
           lang={lang}
           totals={degree.totals}
+          stages={stages.byBlock}
+          stagesLoading={stages.loading}
           irrigate={irrigate}
           irrigateLoading={irrigateQuery.isLoading}
         />

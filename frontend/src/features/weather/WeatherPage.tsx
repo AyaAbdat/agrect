@@ -27,6 +27,7 @@ import {
 } from "./format"
 import { ThresholdsDrawer } from "./ThresholdsDrawer"
 import type {
+  BlockGddSetting,
   DailyOut,
   DegreeDays,
   FarmWeather,
@@ -38,6 +39,7 @@ import type {
   NowOut,
 } from "./types"
 import {
+  BlockOverrideTag,
   PageHeader,
   PageSkeleton,
   SourceTag,
@@ -91,17 +93,29 @@ export function WeatherPage() {
     enabled: farmId !== null && today !== null,
   })
   const cropId = blockQuery.data?.crop?.id ?? null
+  const blockSettingQuery = useQuery({
+    queryKey: ["block-gdd-setting", blockId],
+    queryFn: () => apiGet<BlockGddSetting>(`/v1/blocks/${blockId}/gdd-setting`),
+    enabled: blockId !== undefined,
+  })
   const settingQuery = useQuery({
     queryKey: ["gdd-setting", farmId, cropId],
     queryFn: () => apiGet<GddSetting>(`/v1/farms/${farmId}/gdd-settings/${cropId}`),
     enabled: farmId !== null && cropId !== null,
   })
-  const hasSetting = settingQuery.data?.method != null && settingQuery.data.start_date != null
+  const blockSetting = blockSettingQuery.data
+  const override =
+    blockSetting !== undefined && blockSetting.method !== null ? blockSetting : null
+  const effectiveMethod = override !== null ? override.method : settingQuery.data?.method
+  const effectiveStart = override !== null ? override.start_date : settingQuery.data?.start_date
+  const hasSetting = effectiveMethod != null && effectiveStart != null
   const degreeQuery = useQuery({
-    queryKey: ["weather", farmId, "degree-days", cropId],
+    queryKey: ["weather", farmId, "degree-days", cropId, blockId],
     queryFn: () =>
-      apiGet<DegreeDays>(`/v1/farms/${farmId}/weather/degree-days?crop_id=${cropId}`),
-    enabled: farmId !== null && cropId !== null && hasSetting,
+      apiGet<DegreeDays>(
+        `/v1/farms/${farmId}/weather/degree-days?crop_id=${cropId}&block_id=${blockId}`,
+      ),
+    enabled: farmId !== null && cropId !== null && blockId !== undefined && hasSetting,
   })
 
   if (farmId === null || blockId === undefined) return null
@@ -118,6 +132,7 @@ export function WeatherPage() {
     nowQuery.isError ||
     forecastQuery.isError ||
     dailyQuery.isError ||
+    blockSettingQuery.isError ||
     farmQuery.data === undefined ||
     blockQuery.data === undefined ||
     nowQuery.data === undefined ||
@@ -252,7 +267,10 @@ export function WeatherPage() {
               {t("weather.open")}
             </Link>
           </div>
-          <p className="mt-3 font-semibold">{crop}</p>
+          <p className="mt-3 flex flex-wrap items-center gap-2 font-semibold">
+            <span>{crop}</span>
+            {degree?.setting?.override === true ? <BlockOverrideTag /> : null}
+          </p>
           <p className="mt-2 flex items-center gap-2 text-[22px] font-bold">
             {show(degree?.gdd_total, 1, lang)}
             <span className="text-[13px] font-medium text-mut">{t("weather.unitCday")}</span>

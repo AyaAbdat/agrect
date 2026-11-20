@@ -134,7 +134,7 @@ export function SoilCheckPage() {
       <section className={cardClass}>
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
           <label className="block max-w-sm">
-            <FieldLabel label={t("soil.date")} tag="required" />
+            <FieldLabel label={t("soil.date")} />
             <input
               type="date"
               dir="ltr"
@@ -188,9 +188,12 @@ export function SoilCheckPage() {
         </div>
         <div className="mt-4 rounded-xl bg-[#F7F8F7] p-4">
           <div className="flex items-start justify-between gap-2">
-            <p className="text-[15px] font-bold">
-              {t("soil.resetLine", { left: mm2(left, lang), pct })}
-            </p>
+            <div>
+              <p className="text-[15px] font-bold">{t("soil.resetTitle")}</p>
+              <p className="mt-1 text-[15px] font-bold">
+                {t("soil.resetValue", { left: mm2(left, lang), pct })}
+              </p>
+            </div>
             <SourceTag kind="calculated" />
           </div>
           <p className="mt-2 flex items-center gap-2 text-[13px] text-mut">

@@ -12,6 +12,15 @@ export const fieldClass =
 export const outlineBtn = "h-9 rounded-full border border-line bg-white px-4 text-[13px] font-semibold"
 export const primaryBtn = "h-9 rounded-full bg-pri px-4 text-[13px] font-semibold text-white"
 
+export function BlockOverrideTag() {
+  const { t } = useTranslation()
+  return (
+    <span className="shrink-0 rounded-full bg-mint px-2 py-0.5 text-[10px] font-semibold text-pri">
+      {t("weather.blockOverride")}
+    </span>
+  )
+}
+
 export function SourceTag({ kind }: { kind: "estimated" | "calculated" }) {
   const { t } = useTranslation()
   const estimated = kind === "estimated"

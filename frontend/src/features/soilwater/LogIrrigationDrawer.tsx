@@ -313,15 +313,15 @@ export function LogIrrigationDrawer({
               </dd>
             </div>
           </dl>
-          <p className="mt-3 text-[13px]">
-            {t("soil.entering")}{" "}
+          <p className="mt-3 flex items-center justify-between gap-3 text-[13px]">
+            <span>{t("soil.entering")}</span>
             <span className="font-semibold">
               {mm2(preview?.soil_mm, lang)} {UNIT_MM}
             </span>
           </p>
           {runoff !== null && runoff > 0 ? (
-            <p className="mt-1 text-[13px] text-amb">
-              {t("soil.runoff")}{" "}
+            <p className="mt-1 flex items-center justify-between gap-3 text-[13px] text-amb">
+              <span>{t("soil.runoff")}</span>
               <span className="font-semibold">
                 {mm2(runoff, lang)} {UNIT_MM}
               </span>

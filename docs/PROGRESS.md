@@ -2,7 +2,7 @@
 
 ## Current state
 
-T02a in review
+T21 in review
 
 ## Done
 
@@ -24,27 +24,32 @@ T02a in review
 - T12a
 - T13
 - T14a
+- T14b
+- T02a live at https://app.agrect.com
+- T19
+- T15
+- T16a
+- T16b
+- T17
 
 ## Next
 
-T02b server go-live
+SHOULD items (Block Overview, fertigation station)
 
 ## Known issues
 
 - Starlette TestClient httpx deprecation warning (harmless)
 - T02 deploy deferred (D-023)
 - complete check does not require per_tree emitter fields
-- bundle > 500 kB (code-split in T19)
-- JS bundle 1.6 MB (code-split in T19)
 
 ## Acceptance checklist (MUST)
 
-- [ ] weather service with location only
-- [ ] GDD base/upper/method per crop with block override
+- [x] weather service with location only
+- [x] GDD base/upper/method per crop with block override
 - [x] irrigation logged by run time shows depth and volume matching the registry flow
 - [x] water balance matches vectors and recomputes after a backdated entry
 - [x] optional soil fields never block saving
-- [ ] observed stages as facts and the rest predicted with ranges
-- [ ] confirming a stage moves later predictions
-- [ ] every test vector passes
-- [ ] a block completes with only required fields
+- [x] observed stages as facts and the rest predicted with ranges
+- [x] confirming a stage moves later predictions
+- [x] every test vector passes
+- [x] a block completes with only required fields

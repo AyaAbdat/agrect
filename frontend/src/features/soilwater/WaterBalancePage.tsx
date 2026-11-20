@@ -71,7 +71,12 @@ export function WaterBalancePage() {
     .map((row) => asNumber(row.irrigate_below_mm))
     .find((value) => value !== null)
   const missing = t("common.missing")
-  const formulas = ["soil.howSoilToday", "soil.howDrain", "soil.howCropBalance", "soil.howSoon"] as const
+  const formulas = [
+    { title: "soil.howSoilTodayTitle", body: "soil.howSoilTodayBody" },
+    { title: "soil.howDrainTitle", body: "soil.howDrainBody" },
+    { title: "soil.howCropBalanceTitle", body: "soil.howCropBalanceBody" },
+    { title: "soil.howSoonTitle", body: "soil.howSoonBody" },
+  ] as const
 
   return (
     <div className="flex flex-col gap-4">
@@ -164,9 +169,15 @@ export function WaterBalancePage() {
             <h2 className="text-[15px] font-bold">{t("soil.howCalculated")}</h2>
             <SourceTag kind="calculated" />
           </div>
-          <div className="mt-3 flex flex-col gap-3 text-[13px]">
-            {formulas.map((key) => (
-              <p key={key}>{t(key)}</p>
+          <div className="mt-3">
+            {formulas.map((item, index) => (
+              <div
+                key={item.title}
+                className={index < formulas.length - 1 ? "border-b border-line py-3 first:pt-0" : "pt-3"}
+              >
+                <p className="text-[14px] font-semibold">{t(item.title)}</p>
+                <p className="mt-1 text-[12px] text-mut">{t(item.body)}</p>
+              </div>
             ))}
           </div>
         </section>

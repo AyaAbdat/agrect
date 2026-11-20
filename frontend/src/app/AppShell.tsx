@@ -6,9 +6,10 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router"
 import { activeLang, selectedBlockId, type BlockListItem } from "../features/blocks/types"
 import { apiGet } from "../lib/api"
 import { useAuth } from "./auth"
+import { useInstallPrompt } from "./useInstallPrompt"
 import { blockNav, farmNav, plansNav } from "./navigation"
 import { Drawer } from "../components/Drawer"
-import { EmptyState } from "../components/PlaceholderPage"
+import { EmptyState } from "../components/EmptyState"
 import { LogoMark } from "../components/LogoMark"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -102,6 +103,7 @@ export function AppShell() {
       ? user.email.charAt(0).toUpperCase()
       : t("common.missing")
   const [captureOpen, setCaptureOpen] = useState(false)
+  const { canInstall, install } = useInstallPrompt()
   const settingsActive = pathname.startsWith("/settings")
   const language = isLang(i18n.resolvedLanguage)
     ? i18n.resolvedLanguage
@@ -170,7 +172,11 @@ export function AppShell() {
               <NavLink
                 key={item.segment}
                 to={`/blocks/${selected.id}/${item.segment}`}
-                end={item.segment !== "weather" && item.segment !== "soil-water"}
+                end={
+                  item.segment !== "weather" &&
+                  item.segment !== "soil-water" &&
+                  item.segment !== "stages"
+                }
                 className={({ isActive }) => navItemClass(isActive)}
               >
                 {t(item.labelKey)}
@@ -246,6 +252,9 @@ export function AppShell() {
               ))}
             </DropdownMenuRadioGroup>
             <DropdownMenuSeparator />
+            {canInstall ? (
+              <DropdownMenuItem onClick={install}>{t("menu.install")}</DropdownMenuItem>
+            ) : null}
             <DropdownMenuItem onClick={() => logout()}>
               {t("menu.logout")}
             </DropdownMenuItem>

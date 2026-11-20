@@ -1,8 +1,11 @@
+from datetime import date
 from decimal import Decimal
 
 import pytest
 
 from app.modules.weather.calc import (
+    CalendarDayTemps,
+    average_by_calendar_day,
     chill_hours,
     count_hours_at_or_below,
     dewpoint_c,
@@ -52,6 +55,33 @@ def test_single_sine_cases() -> None:
 
 def test_radiation_sum_jcm2() -> None:
     assert_matches(radiation_sum_jcm2([D("100"), D("200")]), "108.00")
+
+
+def _temps(day: date, tmin: str | None, tmax: str | None) -> CalendarDayTemps:
+    return CalendarDayTemps(
+        day=day,
+        tmin_c=None if tmin is None else D(tmin),
+        tmax_c=None if tmax is None else D(tmax),
+    )
+
+
+def test_average_by_calendar_day_including_29_february() -> None:
+    rows = [
+        _temps(date(2024, 2, 29), "1", "11"),
+        _temps(date(2024, 2, 28), "9", "19"),
+        _temps(date(2023, 2, 28), "3", "13"),
+        _temps(date(2021, 2, 28), None, "15"),
+        _temps(date(2020, 3, 15), "4", "14"),
+        _temps(date(2021, 3, 15), "6", "16"),
+    ]
+    leap = average_by_calendar_day(rows, 2, 29)
+    assert leap.tmin_c == Decimal("2")
+    assert leap.tmax_c == Decimal("13")
+    march = average_by_calendar_day(rows, 3, 15)
+    assert march.tmin_c == Decimal("5")
+    assert march.tmax_c == Decimal("15")
+    assert average_by_calendar_day([], 3, 15).tmin_c is None
+    assert average_by_calendar_day([], 3, 15).tmax_c is None
 
 
 def test_dewpoint_and_hour_counts() -> None:

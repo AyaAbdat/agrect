@@ -26,12 +26,21 @@ class Settings(BaseSettings):
     demo_farm_lon: Decimal | None = None
     demo_farm_tz: str = "Africa/Algiers"
     open_meteo_url: str = "https://api.open-meteo.com/v1/forecast"
+    open_meteo_archive_url: str = "https://archive-api.open-meteo.com/v1/archive"
+    history_years: int = 10
 
     @field_validator("jwt_secret")
     @classmethod
     def jwt_secret_min_length(cls, value: str) -> str:
         if len(value) < 32:
             raise ValueError("JWT_SECRET must be at least 32 characters")
+        return value
+
+    @field_validator("history_years")
+    @classmethod
+    def history_years_in_range(cls, value: int) -> int:
+        if value < 1 or value > 30:
+            raise ValueError("HISTORY_YEARS must be between 1 and 30")
         return value
 
     @property

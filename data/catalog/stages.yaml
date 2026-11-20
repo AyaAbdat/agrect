@@ -1,0 +1,518 @@
+# Phenology scales and stage names for each catalogue crop.
+# scale is the published system. scale_citation is that publication.
+# code is the stage code in that system. name is the plain stage name
+# (French, Arabic, English), not the code. English names are the wording
+# in the task. French and Modern Standard Arabic are draft translations
+# for the agronomist. Descriptions restate the same stage in a sentence.
+# This file has no degree-day or chill numbers.
+crops:
+  - crop: table_grape
+    scale: el
+    scale_citation: "Coombe B.G. (1995). Adoption of a system for identifying grapevine growth stages. Aust. J. Grape Wine Res. 1:100–110 (modified E-L)"
+    stages:
+      - code: "1"
+        sort: 1
+        name:
+          fr: "Bourgeon d'hiver"
+          ar: "برعم شتوي"
+          en: "Winter bud"
+        description:
+          fr: "Les bourgeons restent fermés pendant l'hiver."
+          ar: "تبقى البراعم مغلقة طوال الشتاء."
+          en: "Buds stay closed through the winter."
+      - code: "4"
+        sort: 2
+        name:
+          fr: "Débourrement (pointes des feuilles visibles)"
+          ar: "تفتح البراعم (أطراف الأوراق ظاهرة)"
+          en: "Budburst (leaf tips visible)"
+        description:
+          fr: "Les pointes des feuilles sont visibles à l'ouverture des bourgeons."
+          ar: "تظهر أطراف الأوراق مع تفتح البراعم."
+          en: "Leaf tips are visible as the buds open."
+      - code: "12"
+        sort: 3
+        name:
+          fr: "Cinq feuilles séparées, inflorescence dégagée"
+          ar: "خمس أوراق منفصلة، والنورة الزهرية واضحة"
+          en: "Five leaves separated, inflorescence clear"
+        description:
+          fr: "Cinq feuilles sont séparées et l'inflorescence est bien dégagée."
+          ar: "خمس أوراق منفصلة والنورة الزهرية واضحة."
+          en: "Five leaves are separated and the inflorescence is clearly visible."
+      - code: "19"
+        sort: 4
+        name:
+          fr: "Début de floraison"
+          ar: "بداية الإزهار"
+          en: "Beginning of flowering"
+        description:
+          fr: "Les premières fleurs s'ouvrent."
+          ar: "تتفتح الأزهار الأولى."
+          en: "The first flowers open."
+      - code: "23"
+        sort: 5
+        name:
+          fr: "Pleine floraison (50 % des capuchons tombés)"
+          ar: "إزهار كامل (سقوط 50٪ من القلنسوات)"
+          en: "Full bloom (50 % caps off)"
+        description:
+          fr: "La moitié des capuchons floraux est tombée."
+          ar: "سقط نصف قلنسوات الأزهار."
+          en: "Half of the flower caps have fallen."
+      - code: "27"
+        sort: 6
+        name:
+          fr: "Nouaison"
+          ar: "عقد الثمار"
+          en: "Fruit set"
+        description:
+          fr: "Les fleurs nouées ont donné de jeunes baies."
+          ar: "تحولت الأزهار العاقدة إلى حبات صغيرة."
+          en: "Set flowers have become young berries."
+      - code: "31"
+        sort: 7
+        name:
+          fr: "Baies de la taille d'un pois"
+          ar: "حبات بحجم حبة البازلاء"
+          en: "Berries pea-size"
+        description:
+          fr: "Les baies ont atteint la taille d'un pois."
+          ar: "بلغت الحبات حجم حبة البازلاء."
+          en: "Berries have reached the size of a pea."
+      - code: "35"
+        sort: 8
+        name:
+          fr: "Véraison (les baies commencent à se colorer et à ramollir)"
+          ar: "بداية التلوّن (تبدأ الحبات بالتلوّن واللين)"
+          en: "Veraison (berries begin to colour and soften)"
+        description:
+          fr: "Les baies commencent à se colorer et à ramollir."
+          ar: "تبدأ الحبات بالتلوّن واللين."
+          en: "Berries begin to colour and soften."
+      - code: "38"
+        sort: 9
+        name:
+          fr: "Maturité de récolte"
+          ar: "نضج القطاف"
+          en: "Harvest-ripe"
+        description:
+          fr: "Les baies sont mûres pour la récolte."
+          ar: "الحبات ناضجة للقطاف."
+          en: "Berries are ripe for harvest."
+  - crop: apple
+    scale: bbch
+    scale_citation: "Meier U. (ed.) (2001). Growth stages of mono- and dicotyledonous plants. BBCH Monograph, 2nd ed. (pome fruit)"
+    stages:
+      - code: "00"
+        sort: 1
+        name:
+          fr: "Dormance"
+          ar: "سكون"
+          en: "Dormancy"
+        description:
+          fr: "Les bourgeons d'hiver sont en dormance."
+          ar: "براعم الشتاء في سكون."
+          en: "Winter buds are dormant."
+      - code: "07"
+        sort: 2
+        name:
+          fr: "Début du débourrement"
+          ar: "بداية تفتح البراعم"
+          en: "Beginning of bud break"
+        description:
+          fr: "Les bourgeons commencent à s'ouvrir."
+          ar: "تبدأ البراعم بالتفتح."
+          en: "Buds begin to open."
+      - code: "53"
+        sort: 3
+        name:
+          fr: "Débourrement (pointe verte)"
+          ar: "تفتح البرعم (طرف أخضر)"
+          en: "Bud burst (green tip)"
+        description:
+          fr: "La pointe verte apparaît à l'éclatement du bourgeon."
+          ar: "يظهر الطرف الأخضر عند تفتح البرعم."
+          en: "Green leaf tips show as the bud bursts."
+      - code: "57"
+        sort: 4
+        name:
+          fr: "Bouton rose"
+          ar: "البرعم الوردي"
+          en: "Pink bud"
+        description:
+          fr: "Les boutons floraux sont roses."
+          ar: "براعم الأزهار وردية."
+          en: "Flower buds show pink."
+      - code: "65"
+        sort: 5
+        name:
+          fr: "Pleine floraison"
+          ar: "الإزهار الكامل"
+          en: "Full flowering"
+        description:
+          fr: "L'arbre est en pleine floraison."
+          ar: "الشجرة في إزهار كامل."
+          en: "The tree is in full flower."
+      - code: "69"
+        sort: 6
+        name:
+          fr: "Fin de floraison"
+          ar: "نهاية الإزهار"
+          en: "End of flowering"
+        description:
+          fr: "La floraison est terminée."
+          ar: "انتهى الإزهار."
+          en: "Flowering has finished."
+      - code: "71"
+        sort: 7
+        name:
+          fr: "Nouaison (fruit jusqu'à 10 mm)"
+          ar: "عقد الثمار (ثمرة حتى 10 مم)"
+          en: "Fruit set (fruit up to 10 mm)"
+        description:
+          fr: "Le fruit est noué et mesure jusqu'à 10 mm."
+          ar: "عقدت الثمرة ولم يتجاوز قطرها 10 مم."
+          en: "Fruit has set and is up to 10 mm."
+      - code: "81"
+        sort: 8
+        name:
+          fr: "Début de la maturation"
+          ar: "بداية النضج"
+          en: "Beginning of ripening"
+        description:
+          fr: "Le fruit commence à mûrir."
+          ar: "تبدأ الثمرة بالنضج."
+          en: "Fruit begins to ripen."
+      - code: "87"
+        sort: 9
+        name:
+          fr: "Maturité de cueillette"
+          ar: "نضج القطاف"
+          en: "Ripe for picking"
+        description:
+          fr: "Le fruit est mûr pour la cueillette."
+          ar: "الثمرة ناضجة للقطاف."
+          en: "Fruit is ripe for picking."
+  - crop: olive
+    scale: bbch_olive
+    scale_citation: "Sanz-Cortés F. et al. (2002). Phenological growth stages of olive trees (Olea europaea). Ann. Appl. Biol. 140:151–157"
+    stages:
+      - code: "00"
+        sort: 1
+        name:
+          fr: "Dormance hivernale"
+          ar: "سكون شتوي"
+          en: "Winter dormancy"
+        description:
+          fr: "L'arbre est en dormance pendant l'hiver."
+          ar: "الشجرة في سكون خلال الشتاء."
+          en: "The tree is dormant through winter."
+      - code: "07"
+        sort: 2
+        name:
+          fr: "Début du développement des pousses"
+          ar: "بداية نمو الأفرع"
+          en: "Beginning of shoot development"
+        description:
+          fr: "Les nouvelles pousses commencent à croître."
+          ar: "تبدأ الأفرع الجديدة بالنمو."
+          en: "New shoots begin to grow."
+      - code: "51"
+        sort: 3
+        name:
+          fr: "Les bourgeons d'inflorescence commencent à gonfler"
+          ar: "براعم النورة تبدأ بالانتفاخ"
+          en: "Inflorescence buds start to swell"
+        description:
+          fr: "Les bourgeons d'inflorescence commencent à gonfler."
+          ar: "تبدأ براعم النورات بالانتفاخ."
+          en: "Inflorescence buds start to swell."
+      - code: "55"
+        sort: 4
+        name:
+          fr: "Inflorescence en élongation"
+          ar: "استطالة النورة"
+          en: "Inflorescence expanding"
+        description:
+          fr: "L'inflorescence s'allonge."
+          ar: "تستطيل النورة الزهرية."
+          en: "The inflorescence is expanding."
+      - code: "61"
+        sort: 5
+        name:
+          fr: "Début de floraison"
+          ar: "بداية الإزهار"
+          en: "Beginning of flowering"
+        description:
+          fr: "Les premières fleurs s'ouvrent."
+          ar: "تتفتح الأزهار الأولى."
+          en: "The first flowers open."
+      - code: "65"
+        sort: 6
+        name:
+          fr: "Pleine floraison"
+          ar: "الإزهار الكامل"
+          en: "Full flowering"
+        description:
+          fr: "L'arbre est en pleine floraison."
+          ar: "الشجرة في إزهار كامل."
+          en: "The tree is in full flower."
+      - code: "69"
+        sort: 7
+        name:
+          fr: "Fin de floraison, nouaison"
+          ar: "نهاية الإزهار وعقد الثمار"
+          en: "End of flowering, fruit set"
+        description:
+          fr: "La floraison se termine et les fruits nouent."
+          ar: "ينتهي الإزهار وتعقد الثمار."
+          en: "Flowering ends and fruit sets."
+      - code: "81"
+        sort: 8
+        name:
+          fr: "Début de la coloration des fruits"
+          ar: "بداية تلوّن الثمار"
+          en: "Beginning of fruit colouring"
+        description:
+          fr: "Les fruits commencent à se colorer."
+          ar: "تبدأ الثمار بتغيير لونها."
+          en: "Fruit begins to change colour."
+      - code: "89"
+        sort: 9
+        name:
+          fr: "Maturité de récolte"
+          ar: "نضج القطاف"
+          en: "Harvest ripeness"
+        description:
+          fr: "Les fruits sont mûrs pour la récolte."
+          ar: "الثمار ناضجة للقطاف."
+          en: "Fruit is ripe for harvest."
+  - crop: wheat
+    scale: zadoks
+    scale_citation: "Zadoks J.C., Chang T.T., Konzak C.F. (1974). A decimal code for the growth stages of cereals. Weed Res. 14:415–421"
+    stages:
+      - code: "10"
+        sort: 1
+        name:
+          fr: "Première feuille à travers le coléoptile"
+          ar: "الورقة الأولى خارجة من غمد الريشة"
+          en: "First leaf through coleoptile"
+        description:
+          fr: "La première feuille est sortie à travers le coléoptile."
+          ar: "خرجت الورقة الأولى من غمد الريشة."
+          en: "The first leaf has emerged through the coleoptile."
+      - code: "21"
+        sort: 2
+        name:
+          fr: "Début du tallage"
+          ar: "بداية الإشطاء"
+          en: "Beginning of tillering"
+        description:
+          fr: "La première talle apparaît."
+          ar: "يظهر أول إشطاء."
+          en: "The first tiller appears."
+      - code: "30"
+        sort: 3
+        name:
+          fr: "Début de la montaison (redressement de la pseudo-tige)"
+          ar: "بداية استطالة الساق (انتصاب الساق الكاذبة)"
+          en: "Stem elongation begins (pseudo-stem erection)"
+        description:
+          fr: "La pseudo-tige commence à se redresser."
+          ar: "تبدأ الساق الكاذبة بالانتصاب."
+          en: "The pseudo-stem begins to stand erect."
+      - code: "31"
+        sort: 4
+        name:
+          fr: "Premier nœud décelable"
+          ar: "العقدة الأولى محسوسة"
+          en: "First node detectable"
+        description:
+          fr: "Le premier nœud de la tige est perceptible."
+          ar: "يمكن جس العقدة الأولى على الساق."
+          en: "The first stem node can be felt."
+      - code: "37"
+        sort: 5
+        name:
+          fr: "Dernière feuille juste visible"
+          ar: "ورقة العلم بدأت بالظهور"
+          en: "Flag leaf just visible"
+        description:
+          fr: "La dernière feuille (feuille étendard) est juste visible."
+          ar: "بدأت ورقة العلم بالظهور."
+          en: "The flag leaf is just visible."
+      - code: "45"
+        sort: 6
+        name:
+          fr: "Gaine gonflée"
+          ar: "الغمد منتفخ"
+          en: "Boot swollen"
+        description:
+          fr: "La gaine de la dernière feuille est gonflée."
+          ar: "غمد ورقة العلم منتفخ."
+          en: "The boot is swollen."
+      - code: "55"
+        sort: 7
+        name:
+          fr: "Moitié de l'épi sortie"
+          ar: "نصف السنبلة ظاهرة"
+          en: "Half of head emerged"
+        description:
+          fr: "La moitié de l'épi est sortie."
+          ar: "ظهر نصف السنبلة."
+          en: "Half of the head has emerged."
+      - code: "65"
+        sort: 8
+        name:
+          fr: "Anthèse à mi-parcours"
+          ar: "منتصف الإزهار"
+          en: "Anthesis half-way"
+        description:
+          fr: "L'anthèse est à mi-parcours."
+          ar: "الإزهار في منتصفه."
+          en: "Anthesis is half-way."
+      - code: "75"
+        sort: 9
+        name:
+          fr: "Grain au stade laiteux moyen"
+          ar: "الطور الحليبي المتوسط"
+          en: "Medium milk"
+        description:
+          fr: "Le grain est au stade laiteux moyen."
+          ar: "الحبة في الطور الحليبي المتوسط."
+          en: "Grain is at the medium milk stage."
+      - code: "85"
+        sort: 10
+        name:
+          fr: "Grain au stade pâteux mou"
+          ar: "الطور العجيني الطري"
+          en: "Soft dough"
+        description:
+          fr: "Le grain est au stade pâteux mou."
+          ar: "الحبة في الطور العجيني الطري."
+          en: "Grain is at the soft dough stage."
+      - code: "92"
+        sort: 11
+        name:
+          fr: "Grain mûr (grain dur)"
+          ar: "نضج (الحبة صلبة)"
+          en: "Ripe (grain hard)"
+        description:
+          fr: "Le grain est mûr et dur."
+          ar: "الحبة ناضجة وصلبة."
+          en: "Grain is ripe and hard."
+  - crop: barley
+    scale: zadoks
+    scale_citation: "Zadoks J.C., Chang T.T., Konzak C.F. (1974). A decimal code for the growth stages of cereals. Weed Res. 14:415–421"
+    stages:
+      - code: "10"
+        sort: 1
+        name:
+          fr: "Première feuille à travers le coléoptile"
+          ar: "الورقة الأولى خارجة من غمد الريشة"
+          en: "First leaf through coleoptile"
+        description:
+          fr: "La première feuille est sortie à travers le coléoptile."
+          ar: "خرجت الورقة الأولى من غمد الريشة."
+          en: "The first leaf has emerged through the coleoptile."
+      - code: "21"
+        sort: 2
+        name:
+          fr: "Début du tallage"
+          ar: "بداية الإشطاء"
+          en: "Beginning of tillering"
+        description:
+          fr: "La première talle apparaît."
+          ar: "يظهر أول إشطاء."
+          en: "The first tiller appears."
+      - code: "30"
+        sort: 3
+        name:
+          fr: "Début de la montaison (redressement de la pseudo-tige)"
+          ar: "بداية استطالة الساق (انتصاب الساق الكاذبة)"
+          en: "Stem elongation begins (pseudo-stem erection)"
+        description:
+          fr: "La pseudo-tige commence à se redresser."
+          ar: "تبدأ الساق الكاذبة بالانتصاب."
+          en: "The pseudo-stem begins to stand erect."
+      - code: "31"
+        sort: 4
+        name:
+          fr: "Premier nœud décelable"
+          ar: "العقدة الأولى محسوسة"
+          en: "First node detectable"
+        description:
+          fr: "Le premier nœud de la tige est perceptible."
+          ar: "يمكن جس العقدة الأولى على الساق."
+          en: "The first stem node can be felt."
+      - code: "37"
+        sort: 5
+        name:
+          fr: "Dernière feuille juste visible"
+          ar: "ورقة العلم بدأت بالظهور"
+          en: "Flag leaf just visible"
+        description:
+          fr: "La dernière feuille (feuille étendard) est juste visible."
+          ar: "بدأت ورقة العلم بالظهور."
+          en: "The flag leaf is just visible."
+      - code: "45"
+        sort: 6
+        name:
+          fr: "Gaine gonflée"
+          ar: "الغمد منتفخ"
+          en: "Boot swollen"
+        description:
+          fr: "La gaine de la dernière feuille est gonflée."
+          ar: "غمد ورقة العلم منتفخ."
+          en: "The boot is swollen."
+      - code: "55"
+        sort: 7
+        name:
+          fr: "Moitié de l'épi sortie"
+          ar: "نصف السنبلة ظاهرة"
+          en: "Half of head emerged"
+        description:
+          fr: "La moitié de l'épi est sortie."
+          ar: "ظهر نصف السنبلة."
+          en: "Half of the head has emerged."
+      - code: "65"
+        sort: 8
+        name:
+          fr: "Anthèse à mi-parcours"
+          ar: "منتصف الإزهار"
+          en: "Anthesis half-way"
+        description:
+          fr: "L'anthèse est à mi-parcours."
+          ar: "الإزهار في منتصفه."
+          en: "Anthesis is half-way."
+      - code: "75"
+        sort: 9
+        name:
+          fr: "Grain au stade laiteux moyen"
+          ar: "الطور الحليبي المتوسط"
+          en: "Medium milk"
+        description:
+          fr: "Le grain est au stade laiteux moyen."
+          ar: "الحبة في الطور الحليبي المتوسط."
+          en: "Grain is at the medium milk stage."
+      - code: "85"
+        sort: 10
+        name:
+          fr: "Grain au stade pâteux mou"
+          ar: "الطور العجيني الطري"
+          en: "Soft dough"
+        description:
+          fr: "Le grain est au stade pâteux mou."
+          ar: "الحبة في الطور العجيني الطري."
+          en: "Grain is at the soft dough stage."
+      - code: "92"
+        sort: 11
+        name:
+          fr: "Grain mûr (grain dur)"
+          ar: "نضج (الحبة صلبة)"
+          en: "Ripe (grain hard)"
+        description:
+          fr: "Le grain est mûr et dur."
+          ar: "الحبة ناضجة وصلبة."
+          en: "Grain is ripe and hard."
