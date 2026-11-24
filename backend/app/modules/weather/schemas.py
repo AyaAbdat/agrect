@@ -200,6 +200,9 @@ class DegreeDayPoint(ApiModel):
 class ChillOut(ApiModel):
     season_start: date | None
     hours_total: int | None
+    portions_total: Decimal | None = None
+    portions_status: Literal["calculated_unverified", "calculated"] = "calculated_unverified"
+    portions_reason: str | None = None
 
 
 class DegreeDaysOut(ApiModel):

@@ -12,9 +12,11 @@ import uuid
 from collections.abc import Iterable, Sequence
 from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal, InvalidOperation
+from pathlib import Path
+from typing import Literal
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -32,6 +34,7 @@ from app.modules.weather.calc import (
     CalendarDayTemps,
     average_by_calendar_day,
     chill_hours,
+    chill_portions,
     count_hours_at_or_above,
     count_hours_at_or_below,
     dewpoint_c,
@@ -101,6 +104,12 @@ _VPD_MAX = Decimal("10")
 _BASE_MIN = Decimal("-5")
 _BASE_MAX = Decimal("20")
 _UPPER_MAX = Decimal("45")
+
+# D-065: status flips to "calculated" once the agronomist reference file is present
+# and test_reference_values passes.
+_CHILL_PORTIONS_REFERENCE = (
+    Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "chill_portions_reference.json"
+)
 
 
 def refresh(db: Session, farm: Farm) -> RefreshOut:
@@ -316,13 +325,20 @@ def read_degree_days(
             )
         gdd_total = cumulative
         label = "calculated" if any_gdd else "not_enough_data"
+    portions_total, portions_reason = _chill_portions_summary(db, farm, season)
     return DegreeDaysOut(
         setting=brief,
         from_date=from_date,
         data_from=data_from,
         days=points,
         gdd_total=gdd_total,
-        chill=ChillOut(season_start=season, hours_total=_sum_int(row.chill_h for row in rows)),
+        chill=ChillOut(
+            season_start=season,
+            hours_total=_sum_int(row.chill_h for row in rows),
+            portions_total=portions_total,
+            portions_status=_chill_portions_status(),
+            portions_reason=portions_reason,
+        ),
         frost_h_total=_sum_int(row.frost_h for row in rows),
         heat_h_total=_sum_int(row.heat_h for row in rows),
         label=label,
@@ -812,6 +828,7 @@ def _rederive(
         for day, day_hours in sorted(grouped.items())
     ]
     _upsert(db, WeatherDaily, rows, ("farm_id", "date"))
+    _write_chill_portions(db, farm, zone, season)
     return len(rows)
 
 
@@ -866,11 +883,102 @@ def _daily_values(
         "frost_h": frost_h,
         "heat_h": heat_h,
         "chill_h": chill_h,
+        "chill_portions": None,
         "hours_count": len(day_hours),
         "is_forecast": is_forecast,
         "source": SOURCE,
         "inputs_hash": _inputs_hash(payload),
     }
+
+
+def _write_chill_portions(
+    db: Session,
+    farm: Farm,
+    zone: ZoneInfo,
+    season: date | None,
+) -> None:
+    """Accumulate Dynamic-model portions hour by hour from the chill season start.
+
+    Forecast hours are included. Portions are never estimated from daily
+    temperatures. When stored hourly rows do not reach back to the season
+    start (retention is 92 days), every season day stays null.
+    """
+    if season is None:
+        db.execute(
+            update(WeatherDaily).where(WeatherDaily.farm_id == farm.id).values(chill_portions=None)
+        )
+        return
+    season_begin = datetime.combine(season, time.min, tzinfo=zone)
+    earliest = db.scalar(select(func.min(WeatherHourly.ts)).where(WeatherHourly.farm_id == farm.id))
+    season_days = list(
+        db.scalars(
+            select(WeatherDaily)
+            .where(WeatherDaily.farm_id == farm.id, WeatherDaily.date >= season)
+            .order_by(WeatherDaily.date)
+        ).all()
+    )
+    if earliest is None or earliest.astimezone(zone) > season_begin:
+        for day_row in season_days:
+            day_row.chill_portions = None
+        db.flush()
+        return
+    hours = list(
+        db.scalars(
+            select(WeatherHourly)
+            .where(
+                WeatherHourly.farm_id == farm.id,
+                WeatherHourly.ts >= season_begin,
+                WeatherHourly.temp_c.is_not(None),
+            )
+            .order_by(WeatherHourly.ts)
+        ).all()
+    )
+    if not hours:
+        for day_row in season_days:
+            day_row.chill_portions = None
+        db.flush()
+        return
+    temps = [hour.temp_c for hour in hours if hour.temp_c is not None]
+    cumulative = chill_portions(temps)
+    end_cum: dict[date, Decimal] = {}
+    for hour, total in zip(hours, cumulative, strict=True):
+        end_cum[_local_date(hour.ts, zone)] = total
+    by_day: dict[date, Decimal] = {}
+    previous = Decimal(0)
+    for day in sorted(end_cum):
+        by_day[day] = end_cum[day] - previous
+        previous = end_cum[day]
+    for day_row in season_days:
+        day_row.chill_portions = by_day.get(day_row.date, Decimal(0))
+    db.flush()
+
+
+def _chill_portions_status() -> Literal["calculated_unverified", "calculated"]:
+    if _CHILL_PORTIONS_REFERENCE.is_file():
+        return "calculated"
+    return "calculated_unverified"
+
+
+def _chill_portions_summary(
+    db: Session,
+    farm: Farm,
+    season: date | None,
+) -> tuple[Decimal | None, str | None]:
+    if season is None:
+        return None, None
+    values = list(
+        db.scalars(
+            select(WeatherDaily.chill_portions).where(
+                WeatherDaily.farm_id == farm.id,
+                WeatherDaily.date >= season,
+            )
+        ).all()
+    )
+    if not values:
+        return None, None
+    if any(value is None for value in values):
+        return None, "weather.hourly_not_available"
+    return sum(values, Decimal(0)), None
 
 
 def _fill_history(db: Session, farm: Farm) -> None:

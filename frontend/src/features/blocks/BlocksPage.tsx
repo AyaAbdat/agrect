@@ -3,12 +3,12 @@ import { Plus } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router"
-import { Badge } from "@/components/ui/badge"
 import { SatelliteMap } from "../../components/map/SatelliteMap"
 import { useAuth } from "../../app/auth"
 import { apiGet } from "../../lib/api"
 import { formatNumber } from "../../lib/format"
 import { crumbClass } from "../../lib/navStyles"
+import { StationSideCard } from "../station/StationSideCard"
 import { ErrorRow, LoadingRow } from "./Status"
 import { activeLang, cropLabel, type BlockListItem } from "./types"
 
@@ -20,15 +20,7 @@ function SideCards() {
   const { t } = useTranslation()
   return (
     <aside className="flex w-[340px] shrink-0 flex-col gap-4">
-      <section className="rounded-2xl border border-line bg-white p-4">
-        <div className="flex items-start justify-between gap-3">
-          <h2 className="text-[16px] font-bold">{t("nav.station")}</h2>
-          <Badge variant="secondary" className="bg-[#E5E7EB] text-mut">
-            {t("settings.phase2")}
-          </Badge>
-        </div>
-        <p className="mt-1 text-mut">{t("blocks.stationText")}</p>
-      </section>
+      <StationSideCard />
       <section className="rounded-2xl border border-line bg-white p-4">
         <h2 className="text-[16px] font-bold">{t("nav.stages")}</h2>
         <p className="mt-1 text-mut">{t("blocks.stagesText")}</p>

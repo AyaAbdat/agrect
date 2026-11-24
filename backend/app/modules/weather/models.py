@@ -88,6 +88,7 @@ class WeatherDaily(Base):
     frost_h: Mapped[int | None] = mapped_column(nullable=True)
     heat_h: Mapped[int | None] = mapped_column(nullable=True)
     chill_h: Mapped[int | None] = mapped_column(nullable=True)
+    chill_portions: Mapped[Decimal | None] = mapped_column(Numeric, nullable=True)
     hours_count: Mapped[int] = mapped_column(nullable=False)
     is_forecast: Mapped[bool] = mapped_column(Boolean, nullable=False)
     source: Mapped[str] = mapped_column(

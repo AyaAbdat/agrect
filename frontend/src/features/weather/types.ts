@@ -136,7 +136,13 @@ export type DegreeDays = {
   data_from: string | null
   days: DegreeDayPoint[]
   gdd_total: string | null
-  chill: { season_start: string | null; hours_total: number | null }
+  chill: {
+    season_start: string | null
+    hours_total: number | null
+    portions_total: string | null
+    portions_status: "calculated_unverified" | "calculated"
+    portions_reason: string | null
+  }
   frost_h_total: number | null
   heat_h_total: number | null
   label: "calculated" | "not_enough_data"

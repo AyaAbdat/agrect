@@ -4,15 +4,19 @@ import { WIZARD_STEPS } from "./steps"
 
 export function WizardStepper({
   step,
+  editing,
   onStep,
 }: {
   step: number
+  editing: boolean
   onStep: (step: number) => void
 }) {
   const { t } = useTranslation()
   return (
     <nav className="w-[220px] shrink-0 rounded-2xl border border-line bg-white p-3">
-      <p className={sectionLabelClass}>{t("blocks.wizardLabel")}</p>
+      <p className={sectionLabelClass}>
+        {t(editing ? "blocks.wizardEditLabel" : "blocks.wizardLabel")}
+      </p>
       <ol className="flex flex-col gap-1">
         {WIZARD_STEPS.map((item) => {
           const state = item.id === step ? "current" : item.id < step ? "done" : "future"

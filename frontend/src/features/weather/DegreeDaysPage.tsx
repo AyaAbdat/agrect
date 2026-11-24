@@ -160,13 +160,19 @@ export function DegreeDaysPage() {
               </div>
               <div>
                 <p className="text-[12px] text-mut">{t("weather.chillPortions")}</p>
-                <p className="mt-1 text-[20px] font-bold">
-                  {t("common.missing")}{" "}
+                <p className="mt-1 flex flex-wrap items-center gap-2 text-[20px] font-bold">
+                  {formatNumber(asNumber(degree?.chill.portions_total ?? null), 1, lang)}{" "}
                   <span className="text-[12px] font-medium text-mut">{t("weather.portions")}</span>
+                  {degree?.chill.portions_total != null ? <SourceTag kind="calculated" /> : null}
                 </p>
-                <span className="mt-1 inline-flex rounded-full bg-[#E5E7EB] px-2 py-0.5 text-[10px] font-semibold text-mut">
-                  {t("weather.phase2")}
-                </span>
+                {degree?.chill.portions_status === "calculated_unverified" ? (
+                  <span
+                    className="mt-1 inline-flex rounded-full bg-[#FEF3C7] px-2 py-0.5 text-[10px] font-semibold text-amb"
+                    title={t("weather.referenceCheckTooltip")}
+                  >
+                    {t("weather.referenceCheckPending")}
+                  </span>
+                ) : null}
               </div>
             </div>
             <Button type="button" variant="outline" className={`${outlineBtn} mt-4`} onClick={() => setOpen(true)}>

@@ -2,7 +2,7 @@
 
 ## Current state
 
-T21 in review
+T28 in review
 
 ## Done
 
@@ -31,10 +31,19 @@ T21 in review
 - T16a
 - T16b
 - T17
+- T21
+- 20 Nov deploy, commit 1f18e25
+- T22
+- T23a
+- T23b
+- T24
+- T25
+- T26
+- T27
 
 ## Next
 
-SHOULD items (Block Overview, fertigation station)
+phase 2 continues
 
 ## Known issues
 
@@ -53,3 +62,5 @@ SHOULD items (Block Overview, fertigation station)
 - [x] confirming a stage moves later predictions
 - [x] every test vector passes
 - [x] a block completes with only required fields
+- [x] a harvest entered as crates, bins, tonnes or per valve, rows or trees gives the same kg/ha as the test vectors
+- [x] a harvest inside a product's pre-harvest interval shows a warning

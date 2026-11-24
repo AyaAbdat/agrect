@@ -7,7 +7,7 @@ import { apiGet } from "../../lib/api"
 import { UNIT_MM } from "../../lib/units"
 import { activeLang, type BlockDetail } from "../blocks/types"
 import { OptionalTag } from "../blocks/wizard/wizardUi"
-import { asNumber, farmToday, formatMediumDate, shiftIsoDate } from "../weather/format"
+import { asNumber, formatMediumDate } from "../weather/format"
 import {
   FormulaTip,
   LoadError,
@@ -22,15 +22,14 @@ import { WaterChart, hasChartData, waterPoints } from "./chart"
 import { balanceNote, efficiencyPercent, formatEventDate, mm2, runParts, show } from "./display"
 import { LogIrrigationDrawer } from "./LogIrrigationDrawer"
 import type {
-  BalanceRow,
   FarmClock,
   ForecastRain,
   IrrigationEvents,
   IrrigationSettings,
   IrrigationToday,
   SoilProfile,
-  WaterBalance,
 } from "./types"
+import { useWaterLeftNow } from "./waterLeft"
 
 export function SoilWaterPage() {
   const { t, i18n } = useTranslation()
@@ -70,15 +69,9 @@ export function SoilWaterPage() {
     queryFn: () => apiGet<IrrigationEvents>(`/v1/blocks/${blockId}/irrigation-events?limit=1`),
     enabled: blockId !== undefined,
   })
-  const today = farmQuery.data === undefined ? null : farmToday(farmQuery.data.timezone)
-  const balanceQuery = useQuery({
-    queryKey: ["water-balance", blockId, today],
-    queryFn: () =>
-      apiGet<WaterBalance>(
-        `/v1/blocks/${blockId}/water-balance?from=${shiftIsoDate(today ?? "", -30)}`,
-      ),
-    enabled: blockId !== undefined && today !== null,
-  })
+  const waterLeft = useWaterLeftNow(blockId)
+  const balanceQuery = waterLeft.balanceQuery
+  const today = waterLeft.today
   const forecastQuery = useQuery({
     queryKey: ["weather", farmId, "forecast"],
     queryFn: () => apiGet<ForecastRain>(`/v1/farms/${farmId}/weather/forecast`),
@@ -146,11 +139,7 @@ export function SoilWaterPage() {
     .map((note) => balanceNote(note, lang, t))
     .filter((note): note is string => note !== null)
   const balanceToday = balance.rows.find((row) => row.date === advice.date)
-  const waterNow = balance.rows.reduce<BalanceRow | undefined>((latest, row) => {
-    if (row.date > advice.date) return latest
-    if (latest === undefined || row.date > latest.date) return row
-    return latest
-  }, undefined)
+  const waterNow = waterLeft.row
   const forecastToday = forecastQuery.data?.daily.find((day) => day.date === advice.date)
   const rain = balanceToday?.rain_mm ?? forecastToday?.rain_mm ?? null
   const latest = eventsQuery.data.events[0]
@@ -207,14 +196,14 @@ export function SoilWaterPage() {
             </p>
           ) : null}
           <p className="mt-1 text-[13px] text-mut">
-            {t("soil.irrigateBelow", { value: show(advice.irrigate_below_mm, lang) })}
+            {t("soil.irrigateBelow", { value: show(waterNow?.irrigate_below_mm, lang) })}
           </p>
           <div className="mt-4">
             {chartReady ? (
               <WaterChart
                 points={points}
                 lang={lang}
-                threshold={asNumber(advice.irrigate_below_mm)}
+                threshold={asNumber(waterNow?.irrigate_below_mm)}
                 thresholdLabel={t("soil.legendThreshold")}
               />
             ) : (

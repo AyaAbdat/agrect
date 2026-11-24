@@ -272,3 +272,65 @@ def chill_hours(temps: Sequence[Decimal]) -> int:
     Source: Weinberger (1950) chill hours, 32–45 °F (0–7.2 °C).
     """
     return sum(1 for temp in temps if _CHILL_MIN_C <= temp <= _CHILL_MAX_C)
+
+
+# Dynamic model (Fishman, Erez & Couvillon) — chillR::Dynamic_Model constants.
+_E0 = 4153.5
+_E1 = 12888.8
+_A0 = 139500.0
+_A1 = 2.567e18
+_SLP = 1.6
+_TETMLT = 277.0
+_AA = _A0 / _A1
+_EE = _E1 - _E0
+_CP_QUANTUM = Decimal("0.0001")
+
+
+def chill_portions(hourly_temps_c: Sequence[Decimal]) -> list[Decimal]:
+    """Cumulative chill portions after each hour (Dynamic model).
+
+    Per hour (``inter_e`` starts at 0, ``portions`` at 0):
+
+    - TK = T + 273
+    - ftmprt = slp · tetmlt · (TK − tetmlt) / TK
+    - sr = exp(ftmprt); xi = sr / (1 + sr)
+    - xs = aa · exp(ee / TK); ak1 = a1 · exp(−e1 / TK)
+      with aa = a0/a1, ee = e1 − e0
+    - x = xs − (xs − inter_e) · exp(−ak1)
+    - if x >= 1: delt = xi · x, inter_e = x − delt
+      else: delt = 0, inter_e = x
+    - portions += delt
+
+    Constants: e0 = 4153.5, e1 = 12888.8, a0 = 139500, a1 = 2.567e18,
+    slp = 1.6, tetmlt = 277.
+
+    Exponentials of large magnitudes use Python ``math`` on floats (same
+    reason as D-046 for single-sine trig). Each cumulative total is converted
+    to ``Decimal`` quantized to 0.0001 with ROUND_HALF_UP.
+
+    Source: Fishman S., Erez A., Couvillon G.A. (1987) J. Theor. Biol.
+    124:473–483; Erez A. et al. (1990) Acta Hort. 276:165–174; implementation
+    as in chillR::Dynamic_Model (Luedeling).
+    """
+    if not hourly_temps_c:
+        return []
+    inter_e = 0.0
+    portions = 0.0
+    cumulative: list[Decimal] = []
+    for temp_c in hourly_temps_c:
+        tk = float(temp_c) + 273.0
+        ftmprt = _SLP * _TETMLT * (tk - _TETMLT) / tk
+        sr = math.exp(ftmprt)
+        xi = sr / (1.0 + sr)
+        xs = _AA * math.exp(_EE / tk)
+        ak1 = _A1 * math.exp(-_E1 / tk)
+        x = xs - (xs - inter_e) * math.exp(-ak1)
+        if x >= 1.0:
+            delt = xi * x
+            inter_e = x - delt
+        else:
+            delt = 0.0
+            inter_e = x
+        portions += delt
+        cumulative.append(Decimal(str(portions)).quantize(_CP_QUANTUM, rounding=ROUND_HALF_UP))
+    return cumulative

@@ -8,6 +8,15 @@ from app.modules.auth.router import router as auth_router
 from app.modules.catalog.router import farm_router as phenology_router
 from app.modules.catalog.router import router as catalog_router
 from app.modules.farms.router import router as farms_router
+from app.modules.harvest.router import calc_router as harvest_calc_router
+from app.modules.harvest.router import catalog_router as harvest_catalog_router
+from app.modules.harvest.router import farm_router as harvest_farm_router
+from app.modules.harvest.router import router as harvest_router
+from app.modules.operations.router import blocks_router as operations_blocks_router
+from app.modules.operations.router import calc_router as operations_calc_router
+from app.modules.operations.router import farm_router as operations_farm_router
+from app.modules.operations.router import operation_router as operations_item_router
+from app.modules.operations.router import product_router as operations_product_router
 from app.modules.phenology.router import blocks_router as phenology_blocks_router
 from app.modules.phenology.router import farm_router as phenology_summary_router
 from app.modules.phenology.router import seasons_router as phenology_seasons_router
@@ -16,6 +25,9 @@ from app.modules.registry.router import router as registry_router
 from app.modules.soilwater.router import calc_router as soilwater_calc_router
 from app.modules.soilwater.router import farm_router as soilwater_farm_router
 from app.modules.soilwater.router import router as soilwater_router
+from app.modules.station.router import farm_router as station_farm_router
+from app.modules.station.router import pump_router as station_pump_router
+from app.modules.station.router import source_router as station_source_router
 from app.modules.weather.router import blocks_router as weather_blocks_router
 from app.modules.weather.router import router as weather_router
 
@@ -53,6 +65,18 @@ def create_app() -> FastAPI:
     app.include_router(soilwater_calc_router, prefix="/v1")
     app.include_router(weather_router, prefix="/v1")
     app.include_router(weather_blocks_router, prefix="/v1")
+    app.include_router(station_farm_router, prefix="/v1")
+    app.include_router(station_pump_router, prefix="/v1")
+    app.include_router(station_source_router, prefix="/v1")
+    app.include_router(harvest_router, prefix="/v1")
+    app.include_router(harvest_farm_router, prefix="/v1")
+    app.include_router(harvest_catalog_router, prefix="/v1")
+    app.include_router(harvest_calc_router, prefix="/v1")
+    app.include_router(operations_farm_router, prefix="/v1")
+    app.include_router(operations_product_router, prefix="/v1")
+    app.include_router(operations_item_router, prefix="/v1")
+    app.include_router(operations_blocks_router, prefix="/v1")
+    app.include_router(operations_calc_router, prefix="/v1")
     return app
 
 

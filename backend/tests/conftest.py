@@ -80,7 +80,11 @@ def _truncate_test_tables() -> None:
     with engine.begin() as connection:
         connection.execute(
             text(
-                "TRUNCATE TABLE stage_prediction, stage_observation, block_season, "
+                "TRUNCATE TABLE capacity_decision, pump_window, pump_block, pump, "
+                "water_source, station, "
+                "operation_safety, operation_product, operation, product, "
+                "harvest_quality, harvest_entry, "
+                "stage_prediction, stage_observation, block_season, "
                 "irrigation_event, soil_check, water_balance_daily, "
                 "soil_profile, irrigation_settings, weather_hourly, weather_daily, "
                 "history_daily, "

@@ -13,6 +13,13 @@ from app.modules.catalog.models import (
     VarietyChill,
 )
 from app.modules.farms.models import Farm
+from app.modules.harvest.models import HarvestEntry, HarvestQuality
+from app.modules.operations.models import (
+    Operation,
+    OperationProduct,
+    OperationSafety,
+    Product,
+)
 from app.modules.phenology.models import BlockSeason, StageObservation, StagePrediction
 from app.modules.registry.models import Block, IrrigationLayout, Planting, RecordVersion, Valve
 from app.modules.soilwater.models import (
@@ -21,6 +28,14 @@ from app.modules.soilwater.models import (
     SoilCheck,
     SoilProfile,
     WaterBalanceDaily,
+)
+from app.modules.station.models import (
+    CapacityDecision,
+    Pump,
+    PumpBlock,
+    PumpWindow,
+    Station,
+    WaterSource,
 )
 from app.modules.weather.models import (
     FarmThresholds,
@@ -35,6 +50,7 @@ __all__ = [
     "AppUser",
     "Block",
     "BlockSeason",
+    "CapacityDecision",
     "Crop",
     "CropScale",
     "Farm",
@@ -42,23 +58,34 @@ __all__ = [
     "FarmThresholds",
     "GddSetting",
     "GddSettingBlock",
+    "HarvestEntry",
+    "HarvestQuality",
     "HistoryDaily",
     "IrrigationEvent",
     "IrrigationLayout",
     "IrrigationSettings",
+    "Operation",
+    "OperationProduct",
+    "OperationSafety",
     "Planting",
+    "Product",
+    "Pump",
+    "PumpBlock",
+    "PumpWindow",
     "RecordVersion",
     "SoilCheck",
     "SoilProfile",
     "SoilTextureClass",
     "StageDd",
     "StageDef",
+    "Station",
     "StageObservation",
     "StagePrediction",
     "TrainingSystem",
     "Valve",
     "Variety",
     "VarietyChill",
+    "WaterSource",
     "WaterBalanceDaily",
     "WeatherDaily",
     "WeatherHourly",

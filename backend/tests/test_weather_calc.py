@@ -1,5 +1,7 @@
+import json
 from datetime import date
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 
@@ -7,6 +9,7 @@ from app.modules.weather.calc import (
     CalendarDayTemps,
     average_by_calendar_day,
     chill_hours,
+    chill_portions,
     count_hours_at_or_below,
     dewpoint_c,
     es_kpa,
@@ -90,3 +93,41 @@ def test_dewpoint_and_hour_counts() -> None:
     temps = [D("-1"), D("0"), D("3.5"), D("7.2"), D("7.3")]
     assert chill_hours(temps) == 3
     assert count_hours_at_or_below([D("-1"), D("0"), D("1")], D("0")) == 2
+
+
+def test_chill_portions_empty() -> None:
+    assert chill_portions([]) == []
+
+
+def test_chill_portions_non_decreasing() -> None:
+    temps = [D(str(t)) for t in ([6] * 200 + [25] * 50 + [4] * 100)]
+    cumulative = chill_portions(temps)
+    assert len(cumulative) == len(temps)
+    assert all(cumulative[i] <= cumulative[i + 1] for i in range(len(cumulative) - 1))
+
+
+def test_chill_portions_constant_warm_is_zero() -> None:
+    cumulative = chill_portions([D("25")] * 500)
+    assert cumulative[-1] == Decimal("0.0000")
+
+
+def test_chill_portions_constant_chill_is_positive() -> None:
+    cumulative = chill_portions([D("6")] * 500)
+    assert cumulative[-1] > 0
+
+
+def test_chill_portions_warm_after_chill_never_decreases() -> None:
+    chill_then_warm = chill_portions([D("6")] * 300 + [D("25")] * 200)
+    after_chill = chill_then_warm[299]
+    assert chill_then_warm[-1] >= after_chill
+    assert all(value >= after_chill for value in chill_then_warm[299:])
+
+
+@pytest.mark.skip(reason="reference values from chillR pending (agronomist)")
+def test_reference_values() -> None:
+    path = Path(__file__).resolve().parent / "fixtures" / "chill_portions_reference.json"
+    cases = json.loads(path.read_text(encoding="utf-8"))
+    for case in cases:
+        temps = [Decimal(str(temp)) for temp in case["temps"]]
+        cumulative = chill_portions(temps)
+        assert cumulative[-1] == Decimal(case["expected_cp"])

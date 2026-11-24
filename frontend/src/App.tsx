@@ -22,6 +22,11 @@ const BlockSetupPage = lazy(() =>
     default: m.BlockSetupPage,
   })),
 )
+const OverviewPage = lazy(() =>
+  import("./features/overview/OverviewPage").then((m) => ({
+    default: m.OverviewPage,
+  })),
+)
 const WeatherPage = lazy(() =>
   import("./features/weather/WeatherPage").then((m) => ({ default: m.WeatherPage })),
 )
@@ -93,6 +98,18 @@ const SettingsSectionPage = lazy(() =>
     default: m.SettingsSectionPage,
   })),
 )
+const StationPage = lazy(() =>
+  import("./features/station/StationPage").then((m) => ({ default: m.StationPage })),
+)
+const CapacityPage = lazy(() =>
+  import("./features/station/CapacityPage").then((m) => ({ default: m.CapacityPage })),
+)
+const HarvestPage = lazy(() =>
+  import("./features/harvest/HarvestPage").then((m) => ({ default: m.HarvestPage })),
+)
+const JournalPage = lazy(() =>
+  import("./features/journal/JournalPage").then((m) => ({ default: m.JournalPage })),
+)
 const PlaceholderPage = lazy(() =>
   import("./components/PlaceholderPage").then((m) => ({
     default: m.PlaceholderPage,
@@ -119,8 +136,17 @@ export function App() {
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
           <Route path="/today" element={suspended(<TodayPage />)} />
+          <Route path="/station/capacity" element={suspended(<CapacityPage />)} />
+          <Route path="/station" element={suspended(<StationPage />)} />
+          <Route path="/harvest" element={suspended(<HarvestPage />)} />
           {farmNav
-            .filter((item) => item.to !== "/blocks" && item.to !== "/today")
+            .filter(
+              (item) =>
+                item.to !== "/blocks" &&
+                item.to !== "/today" &&
+                item.to !== "/station" &&
+                item.to !== "/harvest",
+            )
             .map((item) => (
               <Route
                 key={item.to}
@@ -136,6 +162,7 @@ export function App() {
           <Route path="/blocks/new" element={suspended(<BlockWizardPage />)} />
           <Route path="/blocks/:blockId/edit" element={suspended(<BlockWizardPage />)} />
           <Route path="/blocks/:blockId/setup" element={suspended(<BlockSetupPage />)} />
+          <Route path="/blocks/:blockId/overview" element={suspended(<OverviewPage />)} />
           <Route
             path="/blocks/:blockId/weather/degree-day-settings"
             element={suspended(<DegreeDaySettingsPage />)}
@@ -171,6 +198,7 @@ export function App() {
             element={suspended(<StageDetailPage />)}
           />
           <Route path="/blocks/:blockId/stages" element={suspended(<StagesPage />)} />
+          <Route path="/blocks/:blockId/journal" element={suspended(<JournalPage />)} />
           {plansNav.map((item) => (
             <Route
               key={item.to}
@@ -184,9 +212,11 @@ export function App() {
             .filter(
               (item) =>
                 item.segment !== "setup" &&
+                item.segment !== "overview" &&
                 item.segment !== "weather" &&
                 item.segment !== "soil-water" &&
-                item.segment !== "stages",
+                item.segment !== "stages" &&
+                item.segment !== "journal",
             )
             .map((item) => (
               <Route

@@ -127,7 +127,7 @@ export function AppShell() {
             <NavLink
               key={item.to}
               to={item.to}
-              end
+              end={item.to !== "/station"}
               className={({ isActive }) => navItemClass(isActive)}
             >
               {t(item.labelKey)}
@@ -148,7 +148,7 @@ export function AppShell() {
               value={selected?.id ?? null}
               items={Object.fromEntries(blocks.map((block) => [block.id, block.name]))}
               onValueChange={(value) => {
-                if (value !== null) void navigate(`/blocks/${value}/setup`)
+                if (value !== null) void navigate(`/blocks/${value}/overview`)
               }}
             >
               <SelectTrigger className="mb-1 h-[34px] w-full rounded-[10px] border-line bg-white text-[12px]">

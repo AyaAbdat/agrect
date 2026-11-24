@@ -139,7 +139,7 @@ export function BlockWizardPage() {
         </p>
       </header>
       <div className="flex items-start gap-4">
-        <WizardStepper step={step} onStep={goStep} />
+        <WizardStepper step={step} editing={blockId !== undefined} onStep={goStep} />
         {body}
       </div>
       {showReason ? (

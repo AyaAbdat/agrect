@@ -276,12 +276,20 @@ export function WeatherPage() {
             <span className="text-[13px] font-medium text-mut">{t("weather.unitCday")}</span>
             <SourceTag kind="calculated" />
           </p>
-          <p className="mt-2 flex items-center gap-2 text-[13px]">
+          <p className="mt-2 flex flex-wrap items-center gap-2 text-[13px]">
             <span className="text-mut">{t("weather.chillSeasonLine")}</span>
             <span className="font-semibold">
               {formatNumber(degree?.chill.hours_total ?? null, 0, lang)} {UNIT_HOURS}
             </span>
             <SourceTag kind="calculated" />
+          </p>
+          <p className="mt-1 flex flex-wrap items-center gap-2 text-[13px]">
+            <span className="text-mut">{t("weather.chillPortions")}</span>
+            <span className="font-semibold">
+              {formatNumber(asNumber(degree?.chill.portions_total ?? null), 1, lang)}{" "}
+              {t("weather.portions")}
+            </span>
+            {degree?.chill.portions_total != null ? <SourceTag kind="calculated" /> : null}
           </p>
         </section>
         <section className={cardClass}>
