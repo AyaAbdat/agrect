@@ -138,6 +138,44 @@ def refresh(db: Session, farm: Farm) -> RefreshOut:
     return RefreshOut(issued_at=issued_at, hours=len(hourly_rows), days=days)
 
 
+def rederive_day(db: Session, farm: Farm, day: date) -> int:
+    """Re-derive one farm-local day from stored hours and publish ``weather.daily_ready``.
+
+    Used by the nightly job; the water balance and phenology follow through their
+    existing handlers. Idempotent: a second run rewrites the same rows.
+    """
+    days = _rederive(db, farm, _zone(farm), datetime.now(UTC), {day})
+    publish("weather.daily_ready", {"db": db, "farm_id": farm.id, "from_date": day})
+    db.commit()
+    return days
+
+
+def block_degree_days_at(db: Session, block: Block, on: date) -> Decimal | None:
+    """Cumulative degree days for a block from its setting's start date through ``on``.
+
+    Reads stored daily rows only (no fetch). None without a setting or start date,
+    before the start date, or when no day in the span has both tmin and tmax.
+    """
+    setting = effective_gdd_setting(db, block)
+    if setting is None or setting.start_date is None or on < setting.start_date:
+        return None
+    rows = db.scalars(
+        select(WeatherDaily)
+        .where(
+            WeatherDaily.farm_id == block.farm_id,
+            WeatherDaily.date >= setting.start_date,
+            WeatherDaily.date <= on,
+        )
+        .order_by(WeatherDaily.date)
+    ).all()
+    cumulative: Decimal | None = None
+    for row in rows:
+        gdd = _gdd_for_row(row, setting)
+        if gdd is not None:
+            cumulative = gdd if cumulative is None else cumulative + gdd
+    return cumulative
+
+
 def ensure_fresh(db: Session, farm: Farm) -> bool:
     """Refresh when data is missing or older than 60 minutes.
 

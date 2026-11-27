@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     open_meteo_url: str = "https://api.open-meteo.com/v1/forecast"
     open_meteo_archive_url: str = "https://archive-api.open-meteo.com/v1/archive"
     history_years: int = 10
+    jobs_enabled: bool = False
 
     @field_validator("jwt_secret")
     @classmethod

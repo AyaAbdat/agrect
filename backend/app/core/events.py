@@ -6,7 +6,7 @@ transaction; handlers must not commit.
 
 Event names match the system design: ``weather.daily_ready``,
 ``irrigation.logged``, ``waterbalance.updated``, ``block.updated``,
-``stage.observed``, ``stage.predicted``.
+``stage.observed``, ``stage.predicted``, ``operation.logged``.
 """
 
 from collections import defaultdict
@@ -23,6 +23,7 @@ EVENT_NAMES = frozenset(
         "block.updated",
         "stage.observed",
         "stage.predicted",
+        "operation.logged",
     }
 )
 

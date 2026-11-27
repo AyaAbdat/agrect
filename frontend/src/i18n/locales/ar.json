@@ -47,6 +47,7 @@
     "fr": "Français",
     "ar": "العربية",
     "en": "English",
+    "showChecklist": "إظهار قائمة البدء",
     "install": "تثبيت التطبيق",
     "logout": "تسجيل الخروج"
   },
@@ -486,6 +487,7 @@
     "alertsSub": "تحذيرات الصقيع والحرارة في التوقعات حسب عتباتك",
     "frostLine": "صقيع: {{hours}} س في {{date}}",
     "heatLine": "حرارة: {{hours}} س في {{date}}",
+    "maintenanceDueLine": "{{machine}}: {{task}} مستحق",
     "noWarnings": "لا صقيع ولا حرارة خلال الأيام السبعة المقبلة",
     "setThresholds": "تحديد عتبات الصقيع والحرارة",
     "blocksSub": "كل قطعة، وأرقامها، ودرجات الحرارة التراكمية",
@@ -498,7 +500,49 @@
     "irrigateToday": "الري اليوم",
     "irrigateDose": "{{gross}} mm · {{hours}} h {{minutes}} min",
     "stageNow": "المرحلة الآن",
-    "next": "التالي"
+    "next": "التالي",
+    "checklist": {
+      "title": "البدء",
+      "sub": "اضبط مزرعتك بالترتيب. تُعلَّم كل خطوة تلقائياً عند الحفظ.",
+      "progress": "{{done}} من {{total}}",
+      "open": "فتح",
+      "hide": "إخفاء",
+      "stepError": "تعذّر التحقق من هذه الخطوة.",
+      "steps": {
+        "location": {
+          "title": "تحديد موقع المزرعة",
+          "why": "حدّد إحداثيات المزرعة والمنطقة الزمنية للطقس المحلي."
+        },
+        "block": {
+          "title": "إكمال أول قطعة",
+          "why": "ارسم قطعة وأكمل تفاصيل الغرس والري."
+        },
+        "weather": {
+          "title": "تحميل الطقس",
+          "why": "تأكّد من وصول بيانات الطقس والتوقعات لمزرعتك."
+        },
+        "gdd": {
+          "title": "إعدادات درجات النمو لكل محصول مستخدم",
+          "why": "اضبط درجات الحرارة الأساسية والعليا لكل محصول في القطع المكتملة."
+        },
+        "thresholds": {
+          "title": "عتبات الصقيع والحرارة",
+          "why": "حدّد حدود التنبيه لتظهر تحذيرات الصقيع والحرارة في صفحة اليوم."
+        },
+        "soil": {
+          "title": "إعدادات التربة والري",
+          "why": "أضف قوام التربة ومعامل المحصول والكفاءة لكل قطعة مكتملة."
+        },
+        "station": {
+          "title": "محطة التسميد والري",
+          "why": "أضف مضخة واحدة على الأقل للتحقق من سعة الري والدورات."
+        },
+        "prices": {
+          "title": "أسعار المنتجات المستخدمة",
+          "why": "أضف أسعار الوحدات حتى لا تبقى أسعار مفقودة في تكاليف القطع."
+        }
+      }
+    }
   },
   "soil": {
     "crumb": "القطع › {{block}}",
@@ -716,7 +760,8 @@
     "missing": "—",
     "loading": "جارٍ التحميل…",
     "loadError": "تعذر تحميل بياناتك.",
-    "retry": "إعادة المحاولة"
+    "retry": "إعادة المحاولة",
+    "dzd": "دج"
   },
   "stages": {
     "crumbBlock": "القطع › {{block}}",
@@ -872,9 +917,8 @@
     "openJournal": "فتح السجل",
     "reentryLine": "منع الدخول حتى {{until}} ({{product}})",
     "planTitle": "المخطط والفعلي",
-    "planWater": "الماء",
-    "planSoil": "التربة",
-    "planCrop": "المحصول"
+    "planCrop": "المحصول",
+    "costTile": "التكلفة هذا الموسم"
   },
   "harvest": {
     "sub": "التسجيل والتوقّع",
@@ -1117,7 +1161,85 @@
       "netArea": "تحتاج القطعة مساحة مزروعة صافية.",
       "missing": "غير موجود.",
       "conflict": "تغيّر في مكان آخر. أعد التحميل.",
+      "labourHeadcount": "أدخل عدد عمال صالحاً.",
+      "labourWorkersRequired": "اختر عمالاً أو أدخل العدد.",
+      "labourWorkerNotInFarm": "هذا العامل غير مسجل في هذه المزرعة.",
+      "labourHours": "أدخل ساعات صالحة (0 أو أكثر).",
+      "machineMissing": "اختر آلة.",
+      "machineDuplicate": "لا يمكن تكرار نفس الآلة.",
+      "machineNotInFarm": "هذه الآلة غير مسجلة في هذه المزرعة.",
+      "machineHours": "أدخل ساعات عمل موجبة للآلة.",
+      "machineFuel": "أدخل كمية وقود صالحة باللتر (0 أو أكثر).",
       "save": "تعذّر الحفظ. حاول مجدداً."
+    },
+    "unitMismatch": "{{product}}: الوحدة لا تطابق المنتج — غير محتسبة في المخزون أو التكلفة",
+    "workerInactive": "{{worker}}: هذا العامل غير نشط.",
+    "workerInactiveGeneric": "أحد العمال المختارين غير نشط.",
+    "machineInRepair": "{{machine}}: هذه الآلة قيد الصيانة.",
+    "machineInRepairGeneric": "إحدى الآلات المختارة قيد الصيانة.",
+    "machinesSection": "الآلات",
+    "machinesEmpty": "لا توجد آلات بعد. أضف آلات في تبويب الفريق.",
+    "machine": "الآلة",
+    "chooseMachine": "اختر آلة",
+    "machineHours": "الساعات",
+    "machineFuel": "الوقود (ل)",
+    "addMachine": "إضافة آلة",
+    "removeMachine": "إزالة الآلة",
+    "machineWorkRateTitle": "معدل العمل",
+    "machineDetails": "{{machine}} {{hours}} سا",
+    "machineDetailsFuel": "{{machine}} {{hours}} سا · {{fuel}} ل",
+    "labourSection": "اليد العاملة",
+    "labourModeWorkers": "اختيار عمال",
+    "labourModeHeadcount": "عدد العمال",
+    "labourHeadcount": "عدد العمال",
+    "labourHoursEach": "ساعات لكل عامل",
+    "labourNoWorkers": "لا يوجد عمال بعد. أضف عمالاً في الفريق أو أدخل العدد.",
+    "labourPreview": "{{count}} × {{hours}} سا",
+    "labourTotal": "{{total}} سا",
+    "labourDetails": "{{count}} عمال · {{hours}} سا",
+    "print": {
+      "drawerTitle": "تصدير (PDF)",
+      "period": "الفترة",
+      "from": "من",
+      "to": "إلى",
+      "include": "تضمين",
+      "includeOperations": "العمليات",
+      "includeIrrigations": "الري",
+      "includeHarvests": "الحصاد",
+      "includeStages": "المراحل",
+      "language": "اللغة",
+      "langFr": "الفرنسية",
+      "langAr": "العربية",
+      "langEn": "الإنجليزية",
+      "openPrintView": "فتح عرض الطباعة",
+      "selectOneType": "اختر نوع مدخل واحد على الأقل.",
+      "invalidPeriod": "يجب أن يسبق تاريخ البداية تاريخ النهاية أو يساويه.",
+      "docTitle": "سجل القطعة",
+      "farm": "المزرعة",
+      "block": "القطعة",
+      "generatedAt": "تاريخ الإنشاء",
+      "periodLabel": "الفترة",
+      "periodRange": "{{from}} – {{to}}",
+      "fromOnly": "من {{from}}",
+      "toOnly": "حتى {{to}}",
+      "allDates": "كل التواريخ",
+      "areaHa": "{{area}} هكتار",
+      "printButton": "طباعة / حفظ كـ PDF",
+      "back": "رجوع",
+      "colDate": "التاريخ",
+      "colType": "النوع",
+      "colDetails": "التفاصيل",
+      "colPhi": "فترة الأمان قبل الجني",
+      "colCost": "التكلفة (دج)",
+      "colSource": "المصدر",
+      "phiCell": "{{days}} يوماً → {{date}}",
+      "waterM3Ha": "{{m3}} م³/هكتار",
+      "irrigationLine": "المدة {{duration}} · {{depth}} مم · {{volume}} م³",
+      "harvestLine": "جنية {{pass}} · {{kg}} كغ · {{kgHa}} كغ/هكتار",
+      "stageLine": "{{name}} ({{code}}) — ملاحظ",
+      "stageFallback": "{{title}} — ملاحظ",
+      "empty": "لا توجد مدخلات في هذه الفترة.",
+      "footerNote": "القيم الموسومة بـ محسوب تُحسب بواسطة AGRECT من البيانات المُدخلة. أُنشئ من https://app.agrect.com."
     }
   },
   "station": {
@@ -1244,6 +1366,376 @@
       "conflict": "تغيّر هذا في مكان آخر. أعد التحميل وحاول مرة أخرى.",
       "save": "تعذر الحفظ. أعد المحاولة.",
       "delete": "تعذر الحذف. أعد المحاولة."
+    }
+  },
+  "costs": {
+    "title": "التكاليف",
+    "farmTitle": "تكاليف المزرعة",
+    "blockTitle": "تكاليف القطعة",
+    "sub": "تكلفة كل عملية وقطعة هذا الموسم",
+    "season": "الموسم",
+    "farmTotal": "إجمالي المزرعة",
+    "perHa": "دج/هكتار",
+    "block": "القطعة",
+    "total": "الإجمالي",
+    "products": "المنتجات",
+    "water": "الماء",
+    "bySource": "حسب المصدر",
+    "byOperation": "حسب العملية",
+    "missingTitle": "منتجات مستعملة بدون سعر",
+    "missingLink": "تحديد الأسعار",
+    "unitsTitle": "وحدات للتحقق",
+    "unitsRow": "{{product}}: أُدخل بـ {{op}}، والمنتج بـ {{prod}}",
+    "openInJournal": "فتح السجل",
+    "empty": "لا توجد تكاليف بعد",
+    "allBlocks": "كل القطع",
+    "sources": {
+      "product": "المنتجات",
+      "water": "الماء",
+      "labour": "اليد العاملة",
+      "machine": "الآلات",
+      "fuel": "الوقود",
+      "energy": "الطاقة"
+    },
+    "missingResource": {
+      "labour_h": "اليد العاملة (سا)",
+      "machine_h": "الآلة (سا)",
+      "fuel_l": "الوقود (ل)",
+      "water_m3": "الماء (م³)",
+      "energy_kwh": "الطاقة (ك.و.سا)"
+    }
+  },
+  "inventories": {
+    "sub": "المنتجات والمخزون والأسعار",
+    "openCosts": "عرض التكاليف",
+    "date": "التاريخ",
+    "selectProduct": "اختر منتجًا",
+    "tabs": {
+      "products": "المنتجات",
+      "stock": "المخزون",
+      "prices": "الأسعار"
+    },
+    "kinds": {
+      "purchase": "شراء",
+      "use": "استخدام",
+      "adjustment": "تسوية"
+    },
+    "stock": {
+      "product": "المنتج",
+      "onHand": "المتوفر",
+      "uses": "الاستخدامات هذا الموسم",
+      "lastPurchase": "آخر شراء",
+      "recordPurchase": "تسجيل شراء",
+      "adjust": "تعديل المخزون",
+      "empty": "لا يوجد مخزون بعد",
+      "mismatchTip": "بعض الإدخالات تستعمل وحدة لا تطابق هذا المنتج؛ راجع السجل.",
+      "mismatchBadge": "{{count}} للتحقق",
+      "movesTitle": "حركات المخزون",
+      "noMoves": "لا توجد حركات مخزون",
+      "kind": "النوع",
+      "quantity": "الكمية",
+      "fromOperation": "من عملية",
+      "deleteTitle": "حذف حركة المخزون؟",
+      "deleteText": "سيتم حذف حركة المخزون هذه."
+    },
+    "purchase": {
+      "title": "تسجيل شراء",
+      "quantity": "الكمية ({{unit}})",
+      "unitPrice": "سعر الوحدة (دج، اختياري)",
+      "unitPriceHint": "إذا حُدِّد، يُنشأ أيضًا سعر ساري من هذا التاريخ."
+    },
+    "adjust": {
+      "title": "تعديل المخزون",
+      "quantity": "الكمية (+/-)",
+      "note": "السبب"
+    },
+    "prices": {
+      "products": "المنتجات",
+      "resources": "الموارد",
+      "perUnit": "دج للوحدة",
+      "validFrom": "ساري من",
+      "from": "من",
+      "note": "ملاحظة",
+      "history": "السجل",
+      "add": "إضافة سعر",
+      "empty": "لا توجد أسعار بعد",
+      "usedLater": "يُستعمل لاحقًا",
+      "reason": "سبب التغيير",
+      "reasonHint": "الأسعار تغيّر التكاليف السابقة، لذا السبب مطلوب.",
+      "deleteTitle": "حذف السعر؟",
+      "deleteText": "ستُعاد التكاليف التي تستعمل هذا السعر."
+    },
+    "priceDrawer": {
+      "title": "إضافة سعر",
+      "editTitle": "تعديل السعر"
+    },
+    "resources": {
+      "water_m3": "الماء (دج/م³)",
+      "labour_h": "اليد العاملة (دج/س)",
+      "machine_h": "الآلات (دج/س)",
+      "fuel_l": "الوقود (دج/ل)",
+      "energy_kwh": "الطاقة (دج/ك.و.س)"
+    },
+    "errors": {
+      "price": "أدخل سعرًا أكبر من صفر",
+      "product": "اختر منتجًا",
+      "kind": "يمكن إضافة المشتريات أو التسويات فقط",
+      "quantity": "أدخل كمية أكبر من صفر",
+      "adjustQuantity": "أدخل كمية غير صفرية",
+      "reason": "السبب مطلوب",
+      "conflict": "تغيّر هذا السجل؛ أعد التحميل وحاول مجددًا",
+      "useDelete": "الاستخدامات تأتي من العمليات ولا يمكن حذفها هنا",
+      "missing": "غير موجود",
+      "save": "تعذّر الحفظ، حاول مجددًا"
+    }
+  },
+  "team": {
+    "title": "الفريق",
+    "sub": "العمال، الحضور، معايير اليد العاملة والآلات",
+    "tabs": {
+      "workers": "العمال",
+      "attendance": "الحضور",
+      "norms": "معايير اليد العاملة",
+      "machines": "الآلات"
+    },
+    "roles": {
+      "farm_manager": "مسير المزرعة",
+      "agronomist": "مهندس زراعي",
+      "irrigation_lead": "مسؤول الري",
+      "scout": "مراقب حقلي",
+      "operator": "عامل",
+      "owner": "المالك",
+      "other": "أخرى"
+    },
+    "kinds": {
+      "permanent": "دائم",
+      "seasonal": "موسمي"
+    },
+    "workers": {
+      "add": "إضافة عامل",
+      "addTitle": "عامل جديد",
+      "editTitle": "تعديل عامل",
+      "emptyTitle": "لا يوجد عمال بعد",
+      "emptyText": "أضف العمال الدائمين أو الموسميين لتتبع الحضور وساعات العمل في العمليات.",
+      "name": "الاسم",
+      "role": "الدور",
+      "draftList": "قائمة أولية",
+      "kind": "النوع",
+      "phone": "الهاتف",
+      "active": "نشط",
+      "activeHint": "يبقى العمال غير النشطين في السجل ويظهرون بلون باهت عند التسجيل.",
+      "statusActive": "نشط",
+      "statusInactive": "غير نشط",
+      "deleteTitle": "حذف العامل؟",
+      "deleteText": "سيتم حذف {{name}} من الفريق.",
+      "inUseText": "هذا العامل مرتبط بعمليات. اجعله غير نشط بدلاً من الحذف.",
+      "markInactive": "جعله غير نشط"
+    },
+    "attendance": {
+      "dailyTitle": "الحضور اليومي",
+      "date": "التاريخ",
+      "noActiveWorkers": "لا يوجد عمال نشطون بعد. أضف عمالاً في تبويب العمال أولاً.",
+      "present": "حاضر",
+      "presentYes": "حاضر",
+      "presentNo": "غائب",
+      "hours": "الساعات",
+      "hoursPlaceholder": "اختياري",
+      "note": "ملاحظة",
+      "notePlaceholder": "ملاحظة اختيارية",
+      "save": "حفظ الحضور",
+      "saved": "تم حفظ الحضور.",
+      "summaryTitle": "ملخص الحضور",
+      "from": "من",
+      "to": "إلى",
+      "summaryEmpty": "لا يوجد عمال لعرض الملخص.",
+      "daysPresent": "أيام الحضور"
+    },
+    "norms": {
+      "operationType": "نوع العملية",
+      "crop": "المحصول",
+      "operations": "العمليات",
+      "hours": "الساعات",
+      "areaHa": "المساحة (هكتار)",
+      "hPerHa": "سا/هكتار",
+      "empty": "تظهر معايير اليد العاملة بمجرد تسجيل ساعات العمل على العمليات."
+    },
+    "machines": {
+      "add": "إضافة آلة",
+      "addTitle": "آلة جديدة",
+      "editTitle": "تعديل الآلة",
+      "emptyTitle": "لا توجد آلات بعد",
+      "emptyText": "أضف الجرارات والرشاشات والحصادات لتتبع ساعات المحرك والوقود ومعدل العمل والصيانة.",
+      "backToMachines": "العودة إلى الآلات",
+      "name": "الاسم",
+      "type": "النوع",
+      "status": "الحالة",
+      "engineHours": "ساعات المحرك",
+      "engineHoursReading": "قراءة ساعات المحرك",
+      "readingDate": "تاريخ القراءة",
+      "currentEngineHours": "ساعات المحرك (الحالية)",
+      "lastReadingLine": "آخر قراءة: {{hours}} سا في {{date}}",
+      "nextMaintenance": "الصيانة القادمة",
+      "usesThisSeason": "الاستخدامات هذا الموسم ({{season}})",
+      "hours": "الساعات",
+      "fuel": "الوقود",
+      "area": "المساحة",
+      "avgWorkRate": "متوسط معدل العمل",
+      "hoursValue": "{{hours}} سا",
+      "daysValue": "{{days}} يوماً",
+      "litersValue": "{{liters}} ل",
+      "areaValue": "{{area}} هكتار",
+      "workRateValue": "{{rate}} هكتار/سا",
+      "inRepairLower": "قيد الصيانة",
+      "deleteTitle": "حذف الآلة؟",
+      "deleteText": "سيتم حذف {{name}} من مزرعتك.",
+      "types": {
+        "tractor": "جرار",
+        "sprayer": "رشاش",
+        "combine": "حصادة",
+        "other": "أخرى"
+      },
+      "statuses": {
+        "ok": "جاهز",
+        "repair": "قيد الصيانة"
+      },
+      "maintenance": {
+        "title": "الصيانة",
+        "add": "إضافة صيانة",
+        "addTitle": "مهمة صيانة جديدة",
+        "editTitle": "تعديل مهمة الصيانة",
+        "emptyTitle": "لا توجد مهام صيانة بعد",
+        "emptyText": "حدّد فترات بالساعات أو بالأيام لتلقي تنبيهات عند استحقاق الصيانة.",
+        "task": "المهمة",
+        "interval": "الفترة",
+        "intervalHint": "حدّد فترة واحدة على الأقل (بالساعات و/أو بالأيام).",
+        "intervalHours": "كل (ساعات)",
+        "intervalDays": "كل (أيام)",
+        "lastDone": "آخر إنجاز",
+        "lastDoneDate": "تاريخ آخر صيانة",
+        "lastDoneHours": "ساعات المحرك عند آخر صيانة",
+        "nextDue": "الاستحقاق القادم",
+        "every": "كل {{interval}}",
+        "statusOk": "سليم",
+        "statusDue": "مستحق",
+        "statusOverdue": "متأخر",
+        "statusNeverDone": "لم تُنجز بعد — أدخل آخر صيانة",
+        "markDone": "تحديد كمنجز",
+        "markDoneTitle": "تأكيد إنجاز الصيانة",
+        "deleteTitle": "حذف مهمة الصيانة؟",
+        "deleteText": "سيتم حذف {{task}} من هذه الآلة."
+      },
+      "errors": {
+        "nameRequired": "أدخل اسم الآلة.",
+        "nameTaken": "اسم الآلة مستخدم بالفعل.",
+        "inUse": "هذه الآلة مرتبطة بعمليات ولا يمكن حذفها.",
+        "hoursInvalid": "أدخل ساعات محرك صالحة (0 أو أكثر).",
+        "taskRequired": "أدخل مهمة الصيانة.",
+        "intervalRequired": "أدخل فترة بالساعات أو بالأيام.",
+        "intervalInvalid": "أدخل فترة أكبر من صفر.",
+        "notFound": "الآلة غير موجودة.",
+        "maintenanceNotFound": "مهمة الصيانة غير موجودة."
+      }
+    },
+    "errors": {
+      "nameRequired": "أدخل اسم العامل.",
+      "nameTaken": "اسم العامل مستخدم بالفعل.",
+      "workerInUse": "هذا العامل مرتبط بعمليات. اجعله غير نشط بدلاً من الحذف.",
+      "workerNotInFarm": "هذا العامل غير مسجل في مزرعتك.",
+      "hoursInvalid": "أدخل ساعات صالحة (0 أو أكثر).",
+      "rangeInvalid": "يجب أن يكون تاريخ النهاية مساوياً أو بعد تاريخ البداية.",
+      "notFound": "العامل غير موجود.",
+      "conflict": "تغيّر هذا السجل في مكان آخر. أعد التحميل وحاول مجدداً.",
+      "save": "تعذّر الحفظ. حاول مجدداً."
+    }
+  },
+  "farmDetails": {
+    "sub": "اسم المزرعة والموقع والمنطقة الزمنية ومصدر الطقس",
+    "nameLabel": "اسم المزرعة",
+    "renameNote": "إعادة التسمية لاحقاً",
+    "locationLabel": "الموقع",
+    "mapHint": "اسحب الدبوس أو انقر على الخريطة، أو أدخل الإحداثيات أدناه (6 أرقام عشرية).",
+    "latLabel": "خط العرض",
+    "lonLabel": "خط الطول",
+    "timezoneLabel": "المنطقة الزمنية",
+    "weatherSourceLabel": "مصدر الطقس",
+    "weatherService": "خدمة الطقس (Open-Meteo)",
+    "weatherStation": "محطة — المرحلة 2",
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ…",
+    "saved": "تم حفظ الموقع. سيتم تحديث الطقس للموقع الجديد.",
+    "errors": {
+      "latRequired": "أدخل خط العرض.",
+      "lonRequired": "أدخل خط الطول.",
+      "number": "أدخل رقماً صالحاً.",
+      "latOutOfRange": "يجب أن يكون خط العرض بين -90 و90.",
+      "lonOutOfRange": "يجب أن يكون خط الطول بين -180 و180.",
+      "timezoneInvalid": "اختر منطقة زمنية IANA صالحة.",
+      "stationNotSupported": "محطة الطقس قادمة في المرحلة 2.",
+      "save": "تعذّر الحفظ. حاول مجدداً."
+    }
+  },
+  "timeline": {
+    "sub": "صف واحد لكل قطعة، بالأسبوع",
+    "thisSeason": "هذا الموسم",
+    "twoSeasons": "موسمان",
+    "addCrop": "إضافة محصول",
+    "addCropHint": "محصول واحد لكل قطعة حالياً. تعدد المحاصيل قادم في المرحلة 2.",
+    "phase2": "المرحلة 2",
+    "colBlock": "القطعة",
+    "today": "اليوم",
+    "partialWarning": "تعذّر تحميل بعض بيانات القطع. يتم عرض البيانات المتاحة.",
+    "partialRowWarning": "تعذّر تحميل بعض بيانات هذه القطعة.",
+    "emptyTitle": "لا توجد محاصيل على خط الموسم بعد",
+    "emptyText": "تحصل كل قطعة على شريط لكل محصول، ملوّن حسب المحصول، أفتح قبل أول حصاد، مع خط لليوم.",
+    "legend": {
+      "preHarvest": "قبل الحصاد",
+      "harvested": "بعد الحصاد",
+      "stage": "مرحلة مؤكدة",
+      "harvest": "دفعة حصاد",
+      "irrigation": "الري (أسبوعياً)",
+      "operations": "العمليات",
+      "opNutrition": "التسميد / التغذية",
+      "opProtection": "وقاية المحصول",
+      "opFoliar": "ورقي / نمو",
+      "opCanopy": "المجموع الخضري / التقليم",
+      "opOther": "أخرى"
+    },
+    "tooltip": {
+      "harvestPass": "دفعة الحصاد #{{pass}}",
+      "irrigationWeek": "الأسبوع {{week}} ({{year}})",
+      "irrigationCount": "{{count}} عملية ري"
+    }
+  },
+  "compare": {
+    "title": "مقارنة القطع",
+    "sub": "قيمة واحدة عبر جميع القطع · أمس",
+    "phase2": "المرحلة 2",
+    "metrics": {
+      "waterLeft": "المياه المتبقية",
+      "waterApplied": "المياه المضافة",
+      "cropWaterUse": "استهلاك المحصول للمياه",
+      "degreeDays": "درجات الحرارة التراكمية",
+      "pestCount": "تعداد الآفات",
+      "stage": "المرحلة"
+    },
+    "yesterday": "أمس",
+    "colBlock": "القطعة",
+    "colValue": "القيمة",
+    "colPlan": "الخطة",
+    "colMean7d": "متوسط 7 أيام",
+    "notEnoughData": "بيانات غير كافية",
+    "emptyTitle": "لا شيء للمقارنة بعد",
+    "emptyText": "تبدأ المقارنة بمجرد إرسال قطعتين أو أكثر للبيانات.",
+    "driftTitle": "نفس الإعداد، نتيجة مختلفة",
+    "driftSub": "عندما تبتعد نتائج قطع بنفس الخطة عن بعضها، ينبّهك AGRECT هنا.",
+    "nothingFlagged": "لا توجد تنبيهات",
+    "flags": {
+      "driftSameSetting": "المياه المتبقية انحرفت عن القطع الأخرى التي لها نفس المحصول وإعدادات الري.",
+      "generic": "تم رصد تباين بين قطع لها نفس الإعداد."
+    },
+    "units": {
+      "mm": "مم",
+      "degcDay": "°م·يوم"
     }
   }
 }

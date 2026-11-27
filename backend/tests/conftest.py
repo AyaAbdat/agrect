@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 from alembic.config import Config
 from fastapi.testclient import TestClient
+from psycopg import sql
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import Session
@@ -38,6 +39,8 @@ def _configured_database_url() -> str:
 
 
 os.environ["JWT_SECRET"] = "test-secret-" + "0" * 52
+# Minimal argon2 cost in tests only (app.core.security); production keeps the defaults.
+os.environ["TEST_FAST_HASH"] = "1"
 os.environ["DATABASE_URL"] = (
     make_url(_configured_database_url())
     .set(database="agrect_test")
@@ -49,7 +52,7 @@ from app.modules.weather.client import WeatherProviderError
 
 get_settings.cache_clear()
 
-from app.core.db import SessionLocal, engine
+from app.core.db import Base, SessionLocal, engine
 from app.core.security import create_access_token, hash_password
 from app.main import app
 from app.modules.auth.models import AppUser
@@ -74,28 +77,48 @@ def _ensure_test_database() -> None:
         admin_engine.dispose()
 
 
-def _truncate_test_tables() -> None:
-    if engine.url.database != "agrect_test":
-        raise RuntimeError("refusing to truncate a non-test database")
-    with engine.begin() as connection:
-        connection.execute(
-            text(
-                "TRUNCATE TABLE capacity_decision, pump_window, pump_block, pump, "
-                "water_source, station, "
-                "operation_safety, operation_product, operation, product, "
-                "harvest_quality, harvest_entry, "
-                "stage_prediction, stage_observation, block_season, "
-                "irrigation_event, soil_check, water_balance_daily, "
-                "soil_profile, irrigation_settings, weather_hourly, weather_daily, "
-                "history_daily, "
-                "gdd_setting_block, gdd_setting, farm_thresholds, planting, "
-                "irrigation_layout, valve, "
-                "record_version, block, farm_stage_pref, stage_dd, variety_chill, "
-                "stage_def, crop_scale, "
-                "app_user, farm, variety, training_system, soil_texture_class, crop "
-                "RESTART IDENTITY CASCADE"
+def _app_tables() -> list[str]:
+    """Every application table, children before parents (safe DELETE order)."""
+    import app.core.models  # noqa: F401  (registers every model on the metadata)
+
+    return [table.name for table in reversed(Base.metadata.sorted_tables)]
+
+
+def _check_reset_covers_database(tables: list[str]) -> None:
+    """Fail loudly if a table exists in the database but would not be reset."""
+    with engine.connect() as connection:
+        present = set(
+            connection.scalars(
+                text(
+                    "SELECT tablename FROM pg_tables WHERE schemaname = 'public' "
+                    "AND tablename NOT IN ('alembic_version', 'spatial_ref_sys')"
+                )
             )
         )
+    missing = present - set(tables)
+    if missing:
+        raise RuntimeError(f"tables not reset between tests: {sorted(missing)}")
+
+
+def _reset_test_tables() -> None:
+    """Empty every application table in one round trip.
+
+    One batch of DELETE statements (children first) instead of TRUNCATE: TRUNCATE
+    recreates each table's files and costs seconds per test on a Docker volume,
+    while DELETE on these small tables takes milliseconds. No table uses a
+    sequence (UUID keys), so RESTART IDENTITY has nothing to reset.
+    """
+    if engine.url.database != "agrect_test":
+        raise RuntimeError("refusing to reset a non-test database")
+    batch = sql.SQL("; ").join(
+        sql.SQL("DELETE FROM {}").format(sql.Identifier(name)) for name in _TABLES
+    )
+    with engine.begin() as connection:
+        with connection.connection.cursor() as cursor:
+            cursor.execute(batch)
+
+
+_TABLES = _app_tables()
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -103,13 +126,14 @@ def _prepare_test_database() -> None:
     _ensure_test_database()
     cfg = Config(str(_BACKEND_DIR / "alembic.ini"))
     command.upgrade(cfg, "head")
-    _truncate_test_tables()
+    _check_reset_covers_database(_TABLES)
+    _reset_test_tables()
 
 
 @pytest.fixture(autouse=True)
 def _clean_tables() -> Generator[None, None, None]:
     yield
-    _truncate_test_tables()
+    _reset_test_tables()
 
 
 @pytest.fixture(autouse=True)

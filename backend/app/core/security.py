@@ -1,3 +1,4 @@
+import os
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Annotated
@@ -14,7 +15,15 @@ from app.core.db import get_db
 from app.core.errors import AppError
 from app.modules.auth.models import AppUser
 
-_hasher = PasswordHasher()
+
+def _make_hasher() -> PasswordHasher:
+    """argon2 defaults; minimal cost only when the test suite sets TEST_FAST_HASH=1."""
+    if os.environ.get("TEST_FAST_HASH") == "1":
+        return PasswordHasher(time_cost=1, memory_cost=8, parallelism=1)
+    return PasswordHasher()
+
+
+_hasher = _make_hasher()
 _bearer_scheme = HTTPBearer(auto_error=False)
 
 

@@ -14,6 +14,7 @@ import { runParts } from "../soilwater/display"
 import type { FarmIrrigationToday, IrrigationToday } from "../soilwater/types"
 import { asNumber, farmLocalNow, formatHour, formatLongDate, formatMediumDate, formatWeekdayDate } from "../weather/format"
 import type { StageSummary, SummaryBlock } from "../stages/types"
+import type { MaintenanceList } from "../team/types"
 import { ThresholdsDrawer } from "../weather/ThresholdsDrawer"
 import type {
   BlockGddSetting,
@@ -25,6 +26,7 @@ import type {
   Thresholds,
 } from "../weather/types"
 import { PageHeader, SourceTag, cardClass, outlineBtn, primaryBtn } from "../weather/ui"
+import { GettingStartedCard } from "./GettingStartedCard"
 
 type FarmToday = {
   name: string
@@ -222,10 +224,15 @@ function AlertsCard({
     queryKey: ["thresholds", farmId],
     queryFn: () => apiGet<Thresholds>(`/v1/farms/${farmId}/thresholds`),
   })
+  const maintenanceDueQuery = useQuery({
+    queryKey: ["maintenance-due", farmId],
+    queryFn: () => apiGet<MaintenanceList>(`/v1/farms/${farmId}/maintenance/due`),
+  })
   const loading = forecastQuery.isLoading || thresholdsQuery.isLoading
   const failed = forecastQuery.isError || thresholdsQuery.isError
   const forecast = forecastQuery.data
   const thresholds = thresholdsQuery.data
+  const dueItems = maintenanceDueQuery.data?.items ?? []
   const unset =
     thresholds !== undefined && thresholds.frost_c === null && thresholds.heat_c === null
   const lines =
@@ -249,6 +256,7 @@ function AlertsCard({
           onRetry={() => {
             void forecastQuery.refetch()
             void thresholdsQuery.refetch()
+            void maintenanceDueQuery.refetch()
           }}
         />
       ) : null}
@@ -261,20 +269,37 @@ function AlertsCard({
           {t("today.setThresholds")}
         </button>
       ) : null}
-      {!loading && !failed && !unset && lines.length === 0 ? (
+      {!loading && !failed && !unset && lines.length === 0 && dueItems.length === 0 ? (
         <p className="mt-4 text-[13px] text-mut">{t("today.noWarnings")}</p>
       ) : null}
-      {!loading && !failed && !unset && lines.length > 0 ? (
+      {!loading && !failed && ((!unset && lines.length > 0) || dueItems.length > 0) ? (
         <ul className="mt-4 flex flex-col gap-2">
-          {lines.map((line) => (
-            <li key={line.key}>
-              <span
-                className={`inline-flex rounded-full px-2.5 py-1 text-[12px] font-semibold ${
-                  line.tone === "frost" ? "bg-[#FEF3C7] text-amb" : "bg-[#FEE2E2] text-red"
+          {!unset
+            ? lines.map((line) => (
+                <li key={line.key}>
+                  <span
+                    className={`inline-flex rounded-full px-2.5 py-1 text-[12px] font-semibold ${
+                      line.tone === "frost" ? "bg-[#FEF3C7] text-amb" : "bg-[#FEE2E2] text-red"
+                    }`}
+                  >
+                    {line.text}
+                  </span>
+                </li>
+              ))
+            : null}
+          {dueItems.map((item) => (
+            <li key={item.id}>
+              <Link
+                to={`/team/machines/${item.machine.id}`}
+                className={`inline-flex rounded-full px-2.5 py-1 text-[12px] font-semibold hover:underline ${
+                  item.due.overdue ? "bg-[#FEE2E2] text-red" : "bg-[#FEF3C7] text-amb"
                 }`}
               >
-                {line.text}
-              </span>
+                {t("today.maintenanceDueLine", {
+                  machine: item.machine.name,
+                  task: item.task,
+                })}
+              </Link>
             </li>
           ))}
         </ul>
@@ -703,6 +728,11 @@ export function TodayPage() {
         pending={farmQuery.isLoading}
         failed={farmQuery.isError}
         onRetry={() => void farmQuery.refetch()}
+      />
+      <GettingStartedCard
+        farmId={farmId}
+        lang={lang}
+        onOpenThresholds={() => setThresholdsOpen(true)}
       />
       <div className="flex min-w-0 items-start gap-4">
         <WeatherCard

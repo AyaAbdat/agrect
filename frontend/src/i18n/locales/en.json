@@ -47,6 +47,7 @@
     "fr": "Français",
     "ar": "العربية",
     "en": "English",
+    "showChecklist": "Show setup checklist",
     "install": "Install app",
     "logout": "Log out"
   },
@@ -486,6 +487,7 @@
     "alertsSub": "Forecast frost and heat warnings from your thresholds",
     "frostLine": "Frost: {{hours}} h on {{date}}",
     "heatLine": "Heat: {{hours}} h on {{date}}",
+    "maintenanceDueLine": "{{machine}}: {{task}} due",
     "noWarnings": "No frost or heat in the next 7 days",
     "setThresholds": "Set frost and heat thresholds",
     "blocksSub": "Every block, its numbers and its degree days",
@@ -498,7 +500,49 @@
     "irrigateToday": "Irrigate today",
     "irrigateDose": "{{gross}} mm · {{hours}} h {{minutes}} min",
     "stageNow": "Stage now",
-    "next": "Next"
+    "next": "Next",
+    "checklist": {
+      "title": "Getting started",
+      "sub": "Set up your farm in order. Each step ticks itself as you save.",
+      "progress": "{{done}} of {{total}}",
+      "open": "Open",
+      "hide": "Hide",
+      "stepError": "Could not check this step.",
+      "steps": {
+        "location": {
+          "title": "Farm location set",
+          "why": "Set the farm coordinates and timezone for local weather."
+        },
+        "block": {
+          "title": "First block completed",
+          "why": "Draw a block and complete its planting and irrigation details."
+        },
+        "weather": {
+          "title": "Weather loaded",
+          "why": "Check that live weather and forecast are arriving for your farm."
+        },
+        "gdd": {
+          "title": "Degree-day settings for each crop in use",
+          "why": "Set base and upper temperatures for every crop on your complete blocks."
+        },
+        "thresholds": {
+          "title": "Frost and heat thresholds",
+          "why": "Set alert limits so frost and heat warnings appear on Today."
+        },
+        "soil": {
+          "title": "Soil and irrigation settings",
+          "why": "Add soil texture, Kc and efficiency for each complete block."
+        },
+        "station": {
+          "title": "Fertigation station",
+          "why": "Add at least one pump to check irrigation capacity and shifts."
+        },
+        "prices": {
+          "title": "Prices for products in use",
+          "why": "Add unit prices so block costs have no missing prices."
+        }
+      }
+    }
   },
   "soil": {
     "crumb": "Blocks › {{block}}",
@@ -716,7 +760,8 @@
     "missing": "—",
     "loading": "Loading…",
     "loadError": "Could not load your data.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "dzd": "DZD"
   },
   "stages": {
     "crumbBlock": "Blocks › {{block}}",
@@ -872,9 +917,8 @@
     "openJournal": "Open journal",
     "reentryLine": "Re-entry closed until {{until}} ({{product}})",
     "planTitle": "Plan vs actual",
-    "planWater": "Water",
-    "planSoil": "Soil",
-    "planCrop": "Crop"
+    "planCrop": "Crop",
+    "costTile": "Cost this season"
   },
   "harvest": {
     "sub": "Registration and forecast",
@@ -1117,7 +1161,85 @@
       "netArea": "This block needs a net planted area.",
       "missing": "Not found.",
       "conflict": "This was changed elsewhere. Reload and try again.",
+      "labourHeadcount": "Enter a valid worker count.",
+      "labourWorkersRequired": "Select workers or enter a headcount.",
+      "labourWorkerNotInFarm": "Selected worker is not on this farm.",
+      "labourHours": "Enter valid hours (0 or more).",
+      "machineMissing": "Choose a machine.",
+      "machineDuplicate": "Each machine can only be listed once.",
+      "machineNotInFarm": "Selected machine is not on this farm.",
+      "machineHours": "Enter positive machine hours.",
+      "machineFuel": "Enter valid fuel in litres (0 or more).",
       "save": "Could not save. Try again."
+    },
+    "unitMismatch": "{{product}}: unit does not match the product — not counted in stock or cost",
+    "workerInactive": "{{worker}}: this worker is marked inactive.",
+    "workerInactiveGeneric": "One or more selected workers are marked inactive.",
+    "machineInRepair": "{{machine}}: this machine is marked in repair.",
+    "machineInRepairGeneric": "One or more selected machines are marked in repair.",
+    "machinesSection": "Machines",
+    "machinesEmpty": "No machines yet. Add machines in Team.",
+    "machine": "Machine",
+    "chooseMachine": "Choose a machine",
+    "machineHours": "Hours",
+    "machineFuel": "Fuel (L)",
+    "addMachine": "Add machine",
+    "removeMachine": "Remove machine",
+    "machineWorkRateTitle": "Work rate",
+    "machineDetails": "{{machine}} {{hours}} h",
+    "machineDetailsFuel": "{{machine}} {{hours}} h · {{fuel}} L",
+    "labourSection": "Labour",
+    "labourModeWorkers": "Select workers",
+    "labourModeHeadcount": "Headcount",
+    "labourHeadcount": "Headcount",
+    "labourHoursEach": "Hours each",
+    "labourNoWorkers": "No workers yet. Add workers in Team or use headcount.",
+    "labourPreview": "{{count}} × {{hours}} h",
+    "labourTotal": "{{total}} h",
+    "labourDetails": "{{count}} workers · {{hours}} h",
+    "print": {
+      "drawerTitle": "Export (PDF)",
+      "period": "Period",
+      "from": "From",
+      "to": "To",
+      "include": "Include",
+      "includeOperations": "Operations",
+      "includeIrrigations": "Irrigations",
+      "includeHarvests": "Harvests",
+      "includeStages": "Stages",
+      "language": "Language",
+      "langFr": "Français",
+      "langAr": "العربية",
+      "langEn": "English",
+      "openPrintView": "Open print view",
+      "selectOneType": "Select at least one entry type.",
+      "invalidPeriod": "Start date must be before or equal to end date.",
+      "docTitle": "Block journal",
+      "farm": "Farm",
+      "block": "Block",
+      "generatedAt": "Generated",
+      "periodLabel": "Period",
+      "periodRange": "{{from}} – {{to}}",
+      "fromOnly": "From {{from}}",
+      "toOnly": "Until {{to}}",
+      "allDates": "All dates",
+      "areaHa": "{{area}} ha",
+      "printButton": "Print / Save as PDF",
+      "back": "Back",
+      "colDate": "Date",
+      "colType": "Type",
+      "colDetails": "Details",
+      "colPhi": "Waiting time before picking",
+      "colCost": "Cost (DZD)",
+      "colSource": "Source",
+      "phiCell": "{{days}} days → {{date}}",
+      "waterM3Ha": "{{m3}} m³/ha",
+      "irrigationLine": "Run time {{duration}} · {{depth}} mm · {{volume}} m³",
+      "harvestLine": "Pass {{pass}} · {{kg}} kg · {{kgHa}} kg/ha",
+      "stageLine": "{{name}} ({{code}}) — observed",
+      "stageFallback": "{{title}} — observed",
+      "empty": "No entries in this period.",
+      "footerNote": "Values labelled Calculated are computed by AGRECT from the entered data. Generated from https://app.agrect.com."
     }
   },
   "station": {
@@ -1244,6 +1366,376 @@
       "conflict": "This was changed elsewhere. Reload and try again.",
       "save": "Could not save. Try again.",
       "delete": "Could not delete. Try again."
+    }
+  },
+  "costs": {
+    "title": "Costs",
+    "farmTitle": "Farm costs",
+    "blockTitle": "Block costs",
+    "sub": "Cost of each operation and block this season",
+    "season": "Season",
+    "farmTotal": "Farm total",
+    "perHa": "DZD/ha",
+    "block": "Block",
+    "total": "Total",
+    "products": "Products",
+    "water": "Water",
+    "bySource": "By source",
+    "byOperation": "By operation",
+    "missingTitle": "Products used without a price",
+    "missingLink": "Set prices",
+    "unitsTitle": "Units to check",
+    "unitsRow": "{{product}}: entered in {{op}}, product is in {{prod}}",
+    "openInJournal": "Open journal",
+    "empty": "No costs yet",
+    "allBlocks": "All blocks",
+    "sources": {
+      "product": "Products",
+      "water": "Water",
+      "labour": "Labour",
+      "machine": "Machine",
+      "fuel": "Fuel",
+      "energy": "Energy"
+    },
+    "missingResource": {
+      "labour_h": "Labour (h)",
+      "machine_h": "Machine (h)",
+      "fuel_l": "Fuel (L)",
+      "water_m3": "Water (m³)",
+      "energy_kwh": "Energy (kWh)"
+    }
+  },
+  "inventories": {
+    "sub": "Products, stock and prices",
+    "openCosts": "View costs",
+    "date": "Date",
+    "selectProduct": "Select a product",
+    "tabs": {
+      "products": "Products",
+      "stock": "Stock",
+      "prices": "Prices"
+    },
+    "kinds": {
+      "purchase": "Purchase",
+      "use": "Use",
+      "adjustment": "Adjustment"
+    },
+    "stock": {
+      "product": "Product",
+      "onHand": "On hand",
+      "uses": "Uses this season",
+      "lastPurchase": "Last purchase",
+      "recordPurchase": "Record purchase",
+      "adjust": "Adjust stock",
+      "empty": "No stock yet",
+      "mismatchTip": "Some entries use a unit that does not match this product; check the Journal.",
+      "mismatchBadge": "{{count}} to check",
+      "movesTitle": "Stock moves",
+      "noMoves": "No stock moves yet",
+      "kind": "Type",
+      "quantity": "Quantity",
+      "fromOperation": "From an operation",
+      "deleteTitle": "Delete stock move?",
+      "deleteText": "This stock move will be removed."
+    },
+    "purchase": {
+      "title": "Record purchase",
+      "quantity": "Quantity ({{unit}})",
+      "unitPrice": "Unit price (DZD, optional)",
+      "unitPriceHint": "If set, a price valid from this date is created too."
+    },
+    "adjust": {
+      "title": "Adjust stock",
+      "quantity": "Quantity (+/-)",
+      "note": "Reason"
+    },
+    "prices": {
+      "products": "Products",
+      "resources": "Resources",
+      "perUnit": "DZD per unit",
+      "validFrom": "Valid from",
+      "from": "from",
+      "note": "Note",
+      "history": "History",
+      "add": "Add price",
+      "empty": "No prices yet",
+      "usedLater": "Used later",
+      "reason": "Reason for change",
+      "reasonHint": "Prices change past costs, so a reason is required.",
+      "deleteTitle": "Delete price?",
+      "deleteText": "Costs using this price will be recomputed."
+    },
+    "priceDrawer": {
+      "title": "Add price",
+      "editTitle": "Edit price"
+    },
+    "resources": {
+      "water_m3": "Water (DZD/m³)",
+      "labour_h": "Labour (DZD/h)",
+      "machine_h": "Machine (DZD/h)",
+      "fuel_l": "Fuel (DZD/L)",
+      "energy_kwh": "Energy (DZD/kWh)"
+    },
+    "errors": {
+      "price": "Enter a price above zero",
+      "product": "Choose a product",
+      "kind": "Only purchases or adjustments can be added",
+      "quantity": "Enter a quantity above zero",
+      "adjustQuantity": "Enter a non-zero quantity",
+      "reason": "A reason is required",
+      "conflict": "This record changed; reload and try again",
+      "useDelete": "Uses come from operations and cannot be deleted here",
+      "missing": "Not found",
+      "save": "Could not save, try again"
+    }
+  },
+  "team": {
+    "title": "Team",
+    "sub": "Workers, attendance, labour norms and machines",
+    "tabs": {
+      "workers": "Workers",
+      "attendance": "Attendance",
+      "norms": "Labour norms",
+      "machines": "Machines"
+    },
+    "roles": {
+      "farm_manager": "Farm manager",
+      "agronomist": "Agronomist",
+      "irrigation_lead": "Irrigation lead",
+      "scout": "Scout",
+      "operator": "Operator",
+      "owner": "Owner",
+      "other": "Other"
+    },
+    "kinds": {
+      "permanent": "Permanent",
+      "seasonal": "Seasonal"
+    },
+    "workers": {
+      "add": "Add worker",
+      "addTitle": "New worker",
+      "editTitle": "Edit worker",
+      "emptyTitle": "No workers yet",
+      "emptyText": "Add permanent or seasonal workers to track attendance and hours on operations.",
+      "name": "Name",
+      "role": "Role",
+      "draftList": "Draft list",
+      "kind": "Kind",
+      "phone": "Phone",
+      "active": "Active",
+      "activeHint": "Inactive workers stay in history and appear greyed out when logging.",
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
+      "deleteTitle": "Delete worker?",
+      "deleteText": "{{name}} will be removed from the team.",
+      "inUseText": "This worker is linked to operations. Mark them inactive instead.",
+      "markInactive": "Mark inactive"
+    },
+    "attendance": {
+      "dailyTitle": "Daily attendance",
+      "date": "Date",
+      "noActiveWorkers": "No active workers yet. Add workers in the Workers tab first.",
+      "present": "Present",
+      "presentYes": "Present",
+      "presentNo": "Absent",
+      "hours": "Hours",
+      "hoursPlaceholder": "Optional",
+      "note": "Note",
+      "notePlaceholder": "Optional note",
+      "save": "Save attendance",
+      "saved": "Attendance saved.",
+      "summaryTitle": "Attendance summary",
+      "from": "From",
+      "to": "To",
+      "summaryEmpty": "No workers to summarize yet.",
+      "daysPresent": "Days present"
+    },
+    "norms": {
+      "operationType": "Operation type",
+      "crop": "Crop",
+      "operations": "Operations",
+      "hours": "Hours",
+      "areaHa": "Area (ha)",
+      "hPerHa": "h/ha",
+      "empty": "Norms appear once operations have labour logged."
+    },
+    "machines": {
+      "add": "Add machine",
+      "addTitle": "New machine",
+      "editTitle": "Edit machine",
+      "emptyTitle": "No machines yet",
+      "emptyText": "Add tractors, sprayers or combines to track engine hours, fuel, work rate and maintenance.",
+      "backToMachines": "← Back to machines",
+      "name": "Name",
+      "type": "Type",
+      "status": "Status",
+      "engineHours": "Engine hours",
+      "engineHoursReading": "Engine hours reading",
+      "readingDate": "Reading date",
+      "currentEngineHours": "Engine hours (current)",
+      "lastReadingLine": "Last reading: {{hours}} h on {{date}}",
+      "nextMaintenance": "Next maintenance",
+      "usesThisSeason": "Uses this season ({{season}})",
+      "hours": "Hours",
+      "fuel": "Fuel",
+      "area": "Area",
+      "avgWorkRate": "Average work rate",
+      "hoursValue": "{{hours}} h",
+      "daysValue": "{{days}} days",
+      "litersValue": "{{liters}} L",
+      "areaValue": "{{area}} ha",
+      "workRateValue": "{{rate}} ha/h",
+      "inRepairLower": "in repair",
+      "deleteTitle": "Delete machine?",
+      "deleteText": "{{name}} will be removed from your farm.",
+      "types": {
+        "tractor": "Tractor",
+        "sprayer": "Sprayer",
+        "combine": "Combine",
+        "other": "Other"
+      },
+      "statuses": {
+        "ok": "OK",
+        "repair": "In repair"
+      },
+      "maintenance": {
+        "title": "Maintenance",
+        "add": "Add maintenance",
+        "addTitle": "New maintenance task",
+        "editTitle": "Edit maintenance task",
+        "emptyTitle": "No maintenance tasks yet",
+        "emptyText": "Set hour or day intervals to get reminders when maintenance is due.",
+        "task": "Task",
+        "interval": "Interval",
+        "intervalHint": "Set at least one interval (hours and/or days).",
+        "intervalHours": "Every (hours)",
+        "intervalDays": "Every (days)",
+        "lastDone": "Last done",
+        "lastDoneDate": "Last done date",
+        "lastDoneHours": "Last done engine hours",
+        "nextDue": "Next due",
+        "every": "Every {{interval}}",
+        "statusOk": "OK",
+        "statusDue": "Due",
+        "statusOverdue": "Overdue",
+        "statusNeverDone": "Never done — enter last done",
+        "markDone": "Mark done",
+        "markDoneTitle": "Mark maintenance done",
+        "deleteTitle": "Delete maintenance task?",
+        "deleteText": "{{task}} will be removed from this machine."
+      },
+      "errors": {
+        "nameRequired": "Enter a machine name.",
+        "nameTaken": "This machine name is already used.",
+        "inUse": "This machine is linked to operations and cannot be deleted.",
+        "hoursInvalid": "Enter valid engine hours (0 or more).",
+        "taskRequired": "Enter a maintenance task.",
+        "intervalRequired": "Enter an interval in hours or days.",
+        "intervalInvalid": "Enter an interval above zero.",
+        "notFound": "Machine not found.",
+        "maintenanceNotFound": "Maintenance task not found."
+      }
+    },
+    "errors": {
+      "nameRequired": "Enter a worker name.",
+      "nameTaken": "This worker name is already used.",
+      "workerInUse": "This worker is linked to operations. Mark them inactive instead.",
+      "workerNotInFarm": "This worker does not belong to your farm.",
+      "hoursInvalid": "Enter valid hours (0 or more).",
+      "rangeInvalid": "End date must be on or after start date.",
+      "notFound": "Worker not found.",
+      "conflict": "This record changed elsewhere. Reload and try again.",
+      "save": "Could not save. Try again."
+    }
+  },
+  "farmDetails": {
+    "sub": "Farm name, location, timezone and weather source",
+    "nameLabel": "Farm name",
+    "renameNote": "Renaming comes later",
+    "locationLabel": "Location",
+    "mapHint": "Drag the pin or click the map, or enter coordinates below (6 decimals).",
+    "latLabel": "Latitude",
+    "lonLabel": "Longitude",
+    "timezoneLabel": "Timezone",
+    "weatherSourceLabel": "Weather source",
+    "weatherService": "Weather service (Open-Meteo)",
+    "weatherStation": "Station — Phase 2",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Location saved. Weather will refresh for the new location.",
+    "errors": {
+      "latRequired": "Enter a latitude.",
+      "lonRequired": "Enter a longitude.",
+      "number": "Enter a valid number.",
+      "latOutOfRange": "Latitude must be between -90 and 90.",
+      "lonOutOfRange": "Longitude must be between -180 and 180.",
+      "timezoneInvalid": "Choose a valid IANA timezone.",
+      "stationNotSupported": "Weather station is coming in Phase 2.",
+      "save": "Could not save. Try again."
+    }
+  },
+  "timeline": {
+    "sub": "One row per block, by week",
+    "thisSeason": "This season",
+    "twoSeasons": "Two seasons",
+    "addCrop": "Add crop",
+    "addCropHint": "One crop per block for now. Multiple crops per block arrive in Phase 2.",
+    "phase2": "Phase 2",
+    "colBlock": "Block",
+    "today": "Today",
+    "partialWarning": "Some block data could not be loaded. Showing available rows.",
+    "partialRowWarning": "Some data for this block failed to load.",
+    "emptyTitle": "No crops on the timeline yet",
+    "emptyText": "Each block gets a bar per crop, coloured by crop, lighter before first harvest, with a Today line.",
+    "legend": {
+      "preHarvest": "Before harvest",
+      "harvested": "Harvested",
+      "stage": "Confirmed stage",
+      "harvest": "Harvest pass",
+      "irrigation": "Irrigations (weekly)",
+      "operations": "Operations",
+      "opNutrition": "Fertigation / Nutrition",
+      "opProtection": "Crop protection",
+      "opFoliar": "Foliar / Growth",
+      "opCanopy": "Canopy / Pruning",
+      "opOther": "Other"
+    },
+    "tooltip": {
+      "harvestPass": "Harvest pass #{{pass}}",
+      "irrigationWeek": "Week {{week}} ({{year}})",
+      "irrigationCount": "{{count}} irrigation(s)"
+    }
+  },
+  "compare": {
+    "title": "Compare blocks",
+    "sub": "One value across all blocks · yesterday",
+    "phase2": "Phase 2",
+    "metrics": {
+      "waterLeft": "Water left",
+      "waterApplied": "Water applied",
+      "cropWaterUse": "Crop water use",
+      "degreeDays": "Degree days",
+      "pestCount": "Pest count",
+      "stage": "Stage"
+    },
+    "yesterday": "Yesterday",
+    "colBlock": "Block",
+    "colValue": "Value",
+    "colPlan": "Plan",
+    "colMean7d": "7-day mean",
+    "notEnoughData": "Not enough data",
+    "emptyTitle": "Nothing to compare yet",
+    "emptyText": "Comparison starts once two or more blocks send data.",
+    "driftTitle": "Same setting, different result",
+    "driftSub": "When blocks with the same plan drift apart, AGRECT flags it here.",
+    "nothingFlagged": "Nothing flagged",
+    "flags": {
+      "driftSameSetting": "Water left has drifted from other blocks with the same crop and irrigation setting.",
+      "generic": "Drift detected between blocks with the same setting."
+    },
+    "units": {
+      "mm": "mm",
+      "degcDay": "°C·day"
     }
   }
 }

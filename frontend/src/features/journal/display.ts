@@ -3,7 +3,10 @@ import { asNumber } from "../weather/format"
 import type {
   JournalItem,
   JournalTypeFilter,
+  OperationLabour,
+  OperationMachine,
   OperationType,
+  OperationWarning,
   ProductUnit,
   SourceKind,
 } from "./types"
@@ -157,4 +160,69 @@ export function m3FromWaterLiters(lHa: string | null | undefined): string {
   const parsed = asNumber(lHa)
   if (parsed === null) return ""
   return String(parsed / 1000)
+}
+
+export function warningKey(warning: OperationWarning, index: number): string {
+  if (warning.code === "labour.worker_inactive") {
+    return `${warning.code}-${warning.worker ?? warning.worker_name ?? warning.product ?? index}`
+  }
+  if (warning.code === "equipment.machine_in_repair") {
+    return `${warning.code}-${warning.machine ?? index}`
+  }
+  return `${warning.code}-${warning.product}`
+}
+
+export function warningText(
+  warning: OperationWarning,
+  t: (key: string, opts?: Record<string, string>) => string,
+): string {
+  if (warning.code === "labour.worker_inactive") {
+    const worker = warning.worker ?? warning.worker_name ?? warning.product ?? ""
+    return worker !== ""
+      ? t("journal.workerInactive", { worker })
+      : t("journal.workerInactiveGeneric")
+  }
+  if (warning.code === "equipment.machine_in_repair") {
+    const machine = warning.machine ?? ""
+    return machine !== ""
+      ? t("journal.machineInRepair", { machine })
+      : t("journal.machineInRepairGeneric")
+  }
+  return t("journal.unitMismatch", { product: warning.product })
+}
+
+export function labourDetailsText(
+  labour: OperationLabour | null | undefined,
+  lang: string,
+  t: (key: string, opts?: Record<string, string>) => string,
+): string | null {
+  if (labour === null || labour === undefined) return null
+  return t("journal.labourDetails", {
+    count: formatNumber(labour.headcount, 0, lang),
+    hours: formatNumber(asNumber(labour.total_hours), 1, lang),
+  })
+}
+
+export function machinesDetailsText(
+  machines: OperationMachine[] | null | undefined,
+  lang: string,
+  t: (key: string, opts?: Record<string, string>) => string,
+): string | null {
+  if (machines === null || machines === undefined || machines.length === 0) return null
+  return machines
+    .map((item) => {
+      const hours = formatNumber(asNumber(item.hours), 1, lang)
+      if (item.fuel_l !== null) {
+        return t("journal.machineDetailsFuel", {
+          machine: item.name,
+          hours,
+          fuel: formatNumber(asNumber(item.fuel_l), 1, lang),
+        })
+      }
+      return t("journal.machineDetails", {
+        machine: item.name,
+        hours,
+      })
+    })
+    .join(" · ")
 }

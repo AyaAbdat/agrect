@@ -2,7 +2,16 @@ import { useQuery } from "@tanstack/react-query"
 import L from "leaflet"
 import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { MapContainer, Polygon, TileLayer, Tooltip, useMap, ZoomControl } from "react-leaflet"
+import {
+  MapContainer,
+  Marker,
+  Polygon,
+  TileLayer,
+  Tooltip,
+  useMap,
+  useMapEvents,
+  ZoomControl,
+} from "react-leaflet"
 import { useAuth } from "../../app/auth"
 import { Button } from "@/components/ui/button"
 import { apiGet } from "../../lib/api"
@@ -90,6 +99,11 @@ export type MapBlock = {
   outline: GeoPolygon | null
 }
 
+export type MarkerPosition = {
+  lat: number
+  lon: number
+}
+
 type SatelliteMapProps = {
   height: number
   blocks?: MapBlock[]
@@ -97,7 +111,11 @@ type SatelliteMapProps = {
   drawing?: boolean
   initial?: MapGeometry
   onChange?: (value: MapGeometry) => void
+  marker?: MarkerPosition | null
+  onMarkerChange?: (value: MarkerPosition) => void
 }
+
+const DEFAULT_MARKER_CENTER: [number, number] = [36.7538, 3.0588]
 
 type FarmPoint = {
   lat: string | number | null
@@ -327,6 +345,59 @@ function BlockShapes({
   )
 }
 
+function LocationMarker({
+  marker,
+  onMarkerChange,
+}: {
+  marker: MarkerPosition | null
+  onMarkerChange: (value: MarkerPosition) => void
+}) {
+  const map = useMap()
+  const markerRef = useRef<L.Marker | null>(null)
+  const lastEmittedRef = useRef<MarkerPosition | null>(null)
+
+  useMapEvents({
+    click(event) {
+      const next = { lat: event.latlng.lat, lon: event.latlng.lng }
+      lastEmittedRef.current = next
+      onMarkerChange(next)
+    },
+  })
+
+  useEffect(() => {
+    if (marker === null) return
+    const last = lastEmittedRef.current
+    if (
+      last !== null &&
+      Math.abs(last.lat - marker.lat) < 1e-7 &&
+      Math.abs(last.lon - marker.lon) < 1e-7
+    ) {
+      return
+    }
+    map.panTo([marker.lat, marker.lon])
+  }, [map, marker])
+
+  if (marker === null) return null
+
+  return (
+    <Marker
+      ref={markerRef}
+      position={[marker.lat, marker.lon]}
+      draggable
+      eventHandlers={{
+        dragend() {
+          const current = markerRef.current
+          if (current === null) return
+          const pos = current.getLatLng()
+          const next = { lat: pos.lat, lon: pos.lng }
+          lastEmittedRef.current = next
+          onMarkerChange(next)
+        },
+      }}
+    />
+  )
+}
+
 export function SatelliteMap({
   height,
   blocks = [],
@@ -334,14 +405,17 @@ export function SatelliteMap({
   drawing = false,
   initial,
   onChange,
+  marker,
+  onMarkerChange,
 }: SatelliteMapProps) {
   const { t, i18n } = useTranslation()
   const zoomAt = i18n.dir() === "rtl" ? "topleft" : "topright"
   const { currentFarmId } = useAuth()
+  const markerMode = onMarkerChange !== undefined
   const farmQuery = useQuery({
     queryKey: ["farm", currentFarmId],
     queryFn: () => apiGet<FarmPoint>(`/v1/farms/${currentFarmId}`),
-    enabled: currentFarmId !== null,
+    enabled: currentFarmId !== null && !markerMode,
   })
   const [tool, setTool] = useState<DrawTool | null>(() =>
     drawing && initial?.outline == null ? "outline" : null,
@@ -350,7 +424,14 @@ export function SatelliteMap({
   const [hasOutline, setHasOutline] = useState(() => initial?.outline != null)
   const lat = parseCoord(farmQuery.data?.lat)
   const lon = parseCoord(farmQuery.data?.lon)
-  const center = lat !== null && lon !== null ? ([lat, lon] as [number, number]) : null
+  const center = markerMode
+    ? marker != null
+      ? ([marker.lat, marker.lon] as [number, number])
+      : DEFAULT_MARKER_CENTER
+    : lat !== null && lon !== null
+      ? ([lat, lon] as [number, number])
+      : null
+  const initialZoom = markerMode ? (marker != null ? 15 : 6) : 17
 
   function chooseTool(next: DrawTool) {
     setTool((current) => (current === next ? null : next))
@@ -365,7 +446,7 @@ export function SatelliteMap({
       <p>{t("common.loading")}</p>
     </div>
   )
-  if (farmQuery.isError) {
+  if (!markerMode && farmQuery.isError) {
     body = (
       <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
         <p>{t("common.loadError")}</p>
@@ -374,7 +455,7 @@ export function SatelliteMap({
         </Button>
       </div>
     )
-  } else if (farmQuery.isSuccess && center === null) {
+  } else if (!markerMode && farmQuery.isSuccess && center === null) {
     body = (
       <div className="flex h-full items-center justify-center px-6 text-center">
         <p>{t("blocks.noLocation")}</p>
@@ -385,14 +466,16 @@ export function SatelliteMap({
       <div dir="ltr" className="absolute inset-0 z-0">
         <MapContainer
           center={center}
-          zoom={17}
+          zoom={initialZoom}
           maxZoom={19}
           zoomControl={false}
           className="h-full w-full"
         >
           <TileLayer url={TILES} maxZoom={19} attribution={ATTRIBUTION} />
           <ZoomControl key={zoomAt} position={zoomAt} />
-          {drawing ? (
+          {markerMode ? (
+            <LocationMarker marker={marker ?? null} onMarkerChange={onMarkerChange} />
+          ) : drawing ? (
             <DrawController
               tool={tool}
               undoTick={undoTick}

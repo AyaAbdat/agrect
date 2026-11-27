@@ -26,6 +26,10 @@ export type JournalItem = {
   link_id: string
   source: SourceKind | null
   operation_type: OperationType | null
+  cost_dzd: string | null
+  labour?: OperationLabour | null
+  machines?: OperationMachine[]
+  warnings: OperationWarning[]
 }
 export type JournalList = { items: JournalItem[] }
 export type StageAtBrief = {
@@ -72,6 +76,43 @@ export type OperationSafety = {
   preharvest_interval_days: number | null
   reentry_h: number | null
 }
+export type OperationLabourWorker = {
+  id: string
+  name: string
+}
+export type OperationLabour = {
+  workers: OperationLabourWorker[]
+  headcount: number
+  hours_each: string
+  total_hours: string
+  source: "calculated"
+}
+export type OperationMachine = {
+  id: string
+  name: string
+  hours: string
+  fuel_l: string | null
+  work_rate_ha_h: string | null
+  source: "calculated"
+}
+export type MachineRow = {
+  key: string
+  machine_id: string
+  hours: string
+  fuel_l: string
+}
+export type OperationWarning =
+  | { code: "inputs.unit_mismatch"; product: string }
+  | {
+      code: "labour.worker_inactive"
+      worker?: string | null
+      worker_name?: string | null
+      product?: string | null
+    }
+  | {
+      code: "equipment.machine_in_repair"
+      machine?: string | null
+    }
 export type Operation = {
   id: string
   farm_id: string
@@ -88,6 +129,10 @@ export type Operation = {
   source: "calculated"
   products: OperationProductLine[]
   safety: OperationSafety | null
+  labour: OperationLabour | null
+  machines: OperationMachine[]
+  cost_dzd: string | null
+  warnings: OperationWarning[]
   version: number
   created_at: string
   updated_at: string

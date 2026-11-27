@@ -7,7 +7,14 @@ from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, BeforeValidator, Field, field_serializer
+from pydantic import (
+    BaseModel,
+    BeforeValidator,
+    Field,
+    SerializerFunctionWrapHandler,
+    field_serializer,
+    model_serializer,
+)
 
 from app.modules.operations.models import OperationType, ProductKind, ProductUnit, RateBasis
 
@@ -108,6 +115,40 @@ class OperationSafetyIn(BaseModel):
     reentry_h: int | None = Field(default=None, ge=0)
 
 
+class OperationLabourIn(BaseModel):
+    worker_ids: list[uuid.UUID] | None = None
+    headcount: int | None = Field(default=None, ge=0)
+    hours_each: DecimalIn
+
+
+class OperationLabourWorkerOut(ApiModel):
+    id: uuid.UUID
+    name: str
+
+
+class OperationLabourOut(ApiModel):
+    workers: list[OperationLabourWorkerOut]
+    headcount: int
+    hours_each: Decimal
+    total_hours: Decimal
+    source: Literal["calculated"] = "calculated"
+
+
+class OperationMachineIn(BaseModel):
+    machine_id: uuid.UUID
+    hours: DecimalIn
+    fuel_l: OptionalDecimal = None
+
+
+class OperationMachineOut(ApiModel):
+    id: uuid.UUID
+    name: str
+    hours: Decimal
+    fuel_l: Decimal | None
+    work_rate_ha_h: Decimal | None
+    source: Literal["calculated"] = "calculated"
+
+
 class OperationIn(BaseModel):
     block_id: uuid.UUID
     valve_ids: list[uuid.UUID] = Field(default_factory=list)
@@ -120,6 +161,8 @@ class OperationIn(BaseModel):
     notes: str | None = None
     products: list[OperationProductIn] = Field(default_factory=list)
     safety: OperationSafetyIn | None = None
+    labour: OperationLabourIn | None = None
+    machines: list[OperationMachineIn] = Field(default_factory=list)
 
 
 class OperationPatch(BaseModel):
@@ -133,6 +176,8 @@ class OperationPatch(BaseModel):
     notes: str | None = None
     products: list[OperationProductIn] | None = None
     safety: OperationSafetyIn | None = None
+    labour: OperationLabourIn | None = None
+    machines: list[OperationMachineIn] | None = None
     reason: str | None = None
 
 
@@ -154,6 +199,23 @@ class OperationSafetyOut(ApiModel):
     reentry_h: int | None
 
 
+class OperationWarningOut(ApiModel):
+    code: Literal[
+        "inputs.unit_mismatch",
+        "labour.worker_inactive",
+        "equipment.machine_in_repair",
+    ]
+    product: str | None = None
+    worker: str | None = None
+    machine: str | None = None
+
+    @model_serializer(mode="wrap")
+    def _drop_empty(self, handler: SerializerFunctionWrapHandler) -> dict[str, object]:
+        """Only the subject the code names is sent (product, worker or machine)."""
+        data = handler(self)
+        return {key: value for key, value in data.items() if value is not None}
+
+
 class OperationOut(ApiModel):
     id: uuid.UUID
     farm_id: uuid.UUID
@@ -170,6 +232,10 @@ class OperationOut(ApiModel):
     source: Literal["calculated"] = "calculated"
     products: list[OperationProductOut]
     safety: OperationSafetyOut | None
+    labour: OperationLabourOut | None
+    machines: list[OperationMachineOut]
+    cost_dzd: Decimal | None
+    warnings: list[OperationWarningOut]
     version: int
     created_at: datetime
     updated_at: datetime
@@ -194,6 +260,8 @@ class JournalItemOut(ApiModel):
     link_id: uuid.UUID
     source: Literal["measured", "estimated", "calculated", "entered"] | None = None
     operation_type: OperationType | None = None
+    cost_dzd: Decimal | None = None
+    warnings: list[OperationWarningOut] = []
 
 
 class JournalListOut(ApiModel):

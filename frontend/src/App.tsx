@@ -107,8 +107,37 @@ const CapacityPage = lazy(() =>
 const HarvestPage = lazy(() =>
   import("./features/harvest/HarvestPage").then((m) => ({ default: m.HarvestPage })),
 )
+const SeasonTimelinePage = lazy(() =>
+  import("./features/timeline/SeasonTimelinePage").then((m) => ({
+    default: m.SeasonTimelinePage,
+  })),
+)
+const ComparePage = lazy(() =>
+  import("./features/compare/ComparePage").then((m) => ({
+    default: m.ComparePage,
+  })),
+)
 const JournalPage = lazy(() =>
   import("./features/journal/JournalPage").then((m) => ({ default: m.JournalPage })),
+)
+const JournalPrintPage = lazy(() =>
+  import("./features/journal/JournalPrintPage").then((m) => ({
+    default: m.JournalPrintPage,
+  })),
+)
+const FarmCostsPage = lazy(() =>
+  import("./features/costs/FarmCostsPage").then((m) => ({ default: m.FarmCostsPage })),
+)
+const BlockCostsPage = lazy(() =>
+  import("./features/costs/BlockCostsPage").then((m) => ({ default: m.BlockCostsPage })),
+)
+const TeamPage = lazy(() =>
+  import("./features/team/TeamPage").then((m) => ({ default: m.TeamPage })),
+)
+const MachineDetailPage = lazy(() =>
+  import("./features/team/MachineDetailPage").then((m) => ({
+    default: m.MachineDetailPage,
+  })),
 )
 const PlaceholderPage = lazy(() =>
   import("./components/PlaceholderPage").then((m) => ({
@@ -134,10 +163,16 @@ export function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route element={<RequireAuth />}>
+        <Route
+          path="/blocks/:blockId/journal/print"
+          element={suspended(<JournalPrintPage />)}
+        />
         <Route element={<AppShell />}>
           <Route path="/today" element={suspended(<TodayPage />)} />
           <Route path="/station/capacity" element={suspended(<CapacityPage />)} />
           <Route path="/station" element={suspended(<StationPage />)} />
+          <Route path="/season-timeline" element={suspended(<SeasonTimelinePage />)} />
+          <Route path="/compare" element={suspended(<ComparePage />)} />
           <Route path="/harvest" element={suspended(<HarvestPage />)} />
           {farmNav
             .filter(
@@ -145,6 +180,8 @@ export function App() {
                 item.to !== "/blocks" &&
                 item.to !== "/today" &&
                 item.to !== "/station" &&
+                item.to !== "/season-timeline" &&
+                item.to !== "/compare" &&
                 item.to !== "/harvest",
             )
             .map((item) => (
@@ -199,15 +236,21 @@ export function App() {
           />
           <Route path="/blocks/:blockId/stages" element={suspended(<StagesPage />)} />
           <Route path="/blocks/:blockId/journal" element={suspended(<JournalPage />)} />
-          {plansNav.map((item) => (
-            <Route
-              key={item.to}
-              path={item.to}
-              element={suspended(
-                <PlaceholderPage titleKey={item.labelKey} phase={item.phase} />,
-              )}
-            />
-          ))}
+          <Route path="/blocks/:blockId/costs" element={suspended(<BlockCostsPage />)} />
+          <Route path="/costs" element={suspended(<FarmCostsPage />)} />
+          <Route path="/team/machines/:machineId" element={suspended(<MachineDetailPage />)} />
+          <Route path="/team" element={suspended(<TeamPage />)} />
+          {plansNav
+            .filter((item) => item.to !== "/team")
+            .map((item) => (
+              <Route
+                key={item.to}
+                path={item.to}
+                element={suspended(
+                  <PlaceholderPage titleKey={item.labelKey} phase={item.phase} />,
+                )}
+              />
+            ))}
           {blockNav
             .filter(
               (item) =>

@@ -28,6 +28,8 @@ import type { BlockStages, StageRow } from "../stages/types"
 import type { HarvestFarmSummary } from "../harvest/types"
 import type { JournalList, ReentryInfo } from "../journal/types"
 import { itemTypeKey } from "../journal/display"
+import { money } from "../inventories/money"
+import type { BlockCosts } from "../inventories/types"
 import { densityText } from "../harvest/display"
 import {
   asNumber,
@@ -677,6 +679,11 @@ function JournalCard({ blockId, lang }: { blockId: string; lang: string }) {
                 {formatMediumDate(item.date, lang)} · {t(itemTypeKey(item))}
               </p>
               <p className="text-mut">{item.title}</p>
+              {item.cost_dzd !== null ? (
+                <p className="text-mut" dir="ltr">
+                  {money(item.cost_dzd, lang)} {t("common.dzd")}
+                </p>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -685,27 +692,34 @@ function JournalCard({ blockId, lang }: { blockId: string; lang: string }) {
   )
 }
 
-function PlanCard() {
+function PlanCard({ blockId, lang }: { blockId: string; lang: string }) {
   const { t } = useTranslation()
-  const missing = t("common.missing")
-  const tiles = [
-    { key: "water", label: t("overview.planWater") },
-    { key: "soil", label: t("overview.planSoil") },
-    { key: "crop", label: t("overview.planCrop") },
-  ]
+  const costsQuery = useQuery({
+    queryKey: ["block-costs", blockId, "overview"],
+    queryFn: () => apiGet<BlockCosts>(`/v1/blocks/${blockId}/costs`),
+  })
+  const perHa = costsQuery.data?.per_ha_dzd ?? null
   return (
     <section className={cardClass}>
-      <div className="flex items-start justify-between gap-2">
-        <h2 className="text-[15px] font-bold">{t("overview.planTitle")}</h2>
-        <PhaseTag />
-      </div>
-      <div className="mt-3 grid grid-cols-3 gap-2">
-        {tiles.map((tile) => (
-          <div key={tile.key} className="rounded-xl bg-[#F7F8F7] p-3">
-            <p className="text-[12px] text-mut">{tile.label}</p>
-            <p className="mt-2 text-[18px] font-bold">{missing}</p>
-          </div>
-        ))}
+      <h2 className="text-[15px] font-bold">{t("overview.planTitle")}</h2>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <Link to={`/blocks/${blockId}/costs`} className="block rounded-xl bg-[#F7F8F7] p-3">
+          <p className="flex items-center justify-between gap-2 text-[12px] text-mut">
+            {t("overview.costTile")}
+            <SourceTag kind="calculated" />
+          </p>
+          <p className="mt-2 text-[18px] font-bold" dir="ltr">
+            {costsQuery.isSuccess ? `${money(perHa, lang)} ${t("common.dzd")}` : t("common.missing")}
+          </p>
+          <p className="text-[11px] text-mut">{t("costs.perHa")}</p>
+        </Link>
+        <div className="rounded-xl bg-[#F7F8F7] p-3">
+          <p className="flex items-center justify-between gap-2 text-[12px] text-mut">
+            {t("overview.planCrop")}
+            <PhaseTag />
+          </p>
+          <p className="mt-2 text-[18px] font-bold">{t("common.missing")}</p>
+        </div>
       </div>
     </section>
   )
@@ -765,7 +779,7 @@ export function OverviewPage() {
       </div>
       <div className="grid grid-cols-2 items-start gap-3">
         <JournalCard blockId={blockId} lang={lang} />
-        <PlanCard />
+        <PlanCard blockId={blockId} lang={lang} />
       </div>
       {block !== undefined && zone !== null && today !== null ? (
         <LogIrrigationDrawer

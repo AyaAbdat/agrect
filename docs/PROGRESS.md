@@ -2,7 +2,7 @@
 
 ## Current state
 
-T28 in review
+T38 in review
 
 ## Done
 
@@ -40,10 +40,20 @@ T28 in review
 - T25
 - T26
 - T27
+- T28
+- T29
+- T30
+- T31a
+- T32
+- T31b
+- T33a
+- T34
+- T33b
+- T35
 
 ## Next
 
-phase 2 continues
+T33b equipment screens
 
 ## Known issues
 

@@ -11,6 +11,7 @@ import {
 import { useAuth } from "../../app/auth"
 import { apiGet, apiSend } from "../../lib/api"
 import { activeLang, type BlockDetail } from "../blocks/types"
+import { money } from "../inventories/money"
 import { RegisterHarvestDrawer } from "../harvest/RegisterHarvestDrawer"
 import type { HarvestEntry, HarvestList } from "../harvest/types"
 import { ConfirmDialog } from "../station/dialog"
@@ -32,12 +33,25 @@ import {
   isoWeekText,
   itemTypeKey,
   journalTypesQuery,
+  labourDetailsText,
+  machinesDetailsText,
   operationTypeKey,
   sourceBadgeClass,
   sourceKey,
+  warningKey,
+  warningText,
 } from "./display"
+import { ExportJournalDrawer } from "./ExportJournalDrawer"
 import { NewEntryDrawer } from "./NewEntryDrawer"
-import type { JournalItem, JournalList, JournalTypeFilter, JournalViewTab, Operation, OperationType } from "./types"
+import type {
+  JournalItem,
+  JournalList,
+  JournalTypeFilter,
+  JournalViewTab,
+  Operation,
+  OperationList,
+  OperationType,
+} from "./types"
 
 const CHIP_FILTERS: JournalTypeFilter[] = [
   "all",
@@ -86,6 +100,7 @@ export function JournalPage() {
   const [weekFrom, setWeekFrom] = useState<string>("")
   const [weekTo, setWeekTo] = useState<string>("")
   const [entryOpen, setEntryOpen] = useState(false)
+  const [exportOpen, setExportOpen] = useState(false)
   const [entryType, setEntryType] = useState<OperationType | null>(null)
   const [editingOperation, setEditingOperation] = useState<Operation | null>(null)
   const [irrigationOpen, setIrrigationOpen] = useState(false)
@@ -116,6 +131,21 @@ export function JournalPage() {
       apiGet<JournalList>(journalPath(blockId ?? "", fromParam, toParam, typesParam)),
     enabled: blockId !== undefined,
   })
+  const operationsQuery = useQuery({
+    queryKey: ["operations", farmId, blockId, fromParam, toParam],
+    queryFn: () => {
+      const params = new URLSearchParams()
+      if (blockId !== undefined) params.set("block_id", blockId)
+      if (fromParam !== null) params.set("from", fromParam)
+      if (toParam !== null) params.set("to", toParam)
+      return apiGet<OperationList>(`/v1/farms/${farmId}/operations?${params.toString()}`)
+    },
+    enabled: farmId !== null && blockId !== undefined,
+  })
+  const operationById = useMemo(
+    () => new Map((operationsQuery.data?.operations ?? []).map((row) => [row.id, row])),
+    [operationsQuery.data],
+  )
   const eventsQuery = useQuery({
     queryKey: ["irrigation-events", blockId, "all"],
     queryFn: () => apiGet<IrrigationEvents>(`/v1/blocks/${blockId}/irrigation-events`),
@@ -195,6 +225,11 @@ export function JournalPage() {
       return
     }
     await queryClient.invalidateQueries({ queryKey: ["journal", blockId] })
+    await queryClient.invalidateQueries({ queryKey: ["operations", farmId, blockId] })
+    await queryClient.invalidateQueries({ queryKey: ["labour-norms", farmId] })
+    await queryClient.invalidateQueries({ queryKey: ["machines", farmId] })
+    await queryClient.invalidateQueries({ queryKey: ["machine"] })
+    await queryClient.invalidateQueries({ queryKey: ["maintenance-due", farmId] })
     setDeleting(false)
     setPendingDelete(null)
   }
@@ -222,7 +257,31 @@ export function JournalPage() {
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-semibold">{item.title}</p>
-              {item.details !== null ? <p className="text-[12px] text-mut">{item.details}</p> : null}
+              {(() => {
+                const op = item.kind === "operation" ? operationById.get(item.link_id) : undefined
+                const labour =
+                  item.kind === "operation" ? (item.labour ?? op?.labour ?? null) : null
+                const machines =
+                  item.kind === "operation" ? (item.machines ?? op?.machines ?? []) : []
+                const labourLine = labourDetailsText(labour, lang, t)
+                const machinesLine = machinesDetailsText(machines, lang, t)
+                const detailParts = [item.details, labourLine, machinesLine].filter(
+                  (part): part is string => part !== null && part !== "",
+                )
+                return detailParts.length > 0 ? (
+                  <p className="text-[12px] text-mut">{detailParts.join(" · ")}</p>
+                ) : null
+              })()}
+              {item.cost_dzd !== null ? (
+                <p className="text-[12px] text-mut" dir="ltr">
+                  {money(item.cost_dzd, lang)} {t("common.dzd")}
+                </p>
+              ) : null}
+              {item.warnings.map((warning, index) => (
+                <p key={warningKey(warning, index)} className="text-[12px] text-amb">
+                  {warningText(warning, t)}
+                </p>
+              ))}
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 <JournalSourceTag kind={item.source} />
               </div>
@@ -283,7 +342,7 @@ export function JournalPage() {
         sub={t("journal.sub")}
         actions={
           <>
-            <button type="button" className={outlineBtn} disabled>
+            <button type="button" className={outlineBtn} onClick={() => setExportOpen(true)}>
               {t("journal.exportPdf")}
             </button>
             <button type="button" className={primaryBtn} onClick={openCreate}>
@@ -404,6 +463,13 @@ export function JournalPage() {
         )}
       </section>
 
+      <ExportJournalDrawer
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        blockId={blockId}
+        blockName={block.name}
+        today={today ?? ""}
+      />
       <NewEntryDrawer
         open={entryOpen}
         onOpenChange={setEntryOpen}

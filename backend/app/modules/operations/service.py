@@ -11,10 +11,23 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.errors import AppError
+from app.core.events import publish
 from app.modules.auth.models import AppUser
 from app.modules.catalog.models import StageDef
+from app.modules.equipment.service import (
+    apply_operation_machines,
+    operation_machine_warnings,
+    operation_machines_out,
+)
 from app.modules.farms.models import Farm
 from app.modules.harvest.models import HarvestEntry
+from app.modules.inputs import calc as inputs_calc
+from app.modules.inputs.models import CostLine, CostRefKind
+from app.modules.labour.service import (
+    apply_operation_labour,
+    operation_labour_out,
+    operation_labour_warnings,
+)
 from app.modules.operations import calc
 from app.modules.operations.models import (
     Operation,
@@ -37,6 +50,7 @@ from app.modules.operations.schemas import (
     OperationProductPreviewOut,
     OperationSafetyIn,
     OperationSafetyOut,
+    OperationWarningOut,
     ProductIn,
     ProductListOut,
     ProductOut,
@@ -518,7 +532,33 @@ def _apply_safety(row: Operation, safety: OperationSafetyOut | None) -> None:
     row.safety.reentry_h = safety.reentry_h
 
 
-def _operation_out(row: Operation) -> OperationOut:
+def _operation_cost_dzd(db: Session, operation_id: uuid.UUID) -> Decimal | None:
+    """Sum of the operation's product cost lines; None when none exist (no price)."""
+    totals = db.scalars(
+        select(CostLine.dzd).where(
+            CostLine.ref_kind == CostRefKind.operation,
+            CostLine.ref_id == operation_id,
+        )
+    ).all()
+    if not totals:
+        return None
+    return sum(totals, Decimal(0))
+
+
+def _operation_warnings(db: Session, row: Operation) -> list[OperationWarningOut]:
+    warnings: list[OperationWarningOut] = []
+    for line in row.products:
+        product = line.product
+        if product is None:
+            continue
+        if not inputs_calc.units_compatible(line.total_unit.value, product.unit.value):
+            warnings.append(OperationWarningOut(code="inputs.unit_mismatch", product=product.name))
+    warnings.extend(operation_labour_warnings(db, row.id))
+    warnings.extend(operation_machine_warnings(db, row.id))
+    return warnings
+
+
+def _operation_out(db: Session, row: Operation) -> OperationOut:
     products = [
         OperationProductOut(
             id=line.id,
@@ -556,6 +596,10 @@ def _operation_out(row: Operation) -> OperationOut:
         source="calculated",
         products=products,
         safety=safety,
+        labour=operation_labour_out(db, row.id),
+        machines=operation_machines_out(db, row),
+        cost_dzd=_operation_cost_dzd(db, row.id),
+        warnings=_operation_warnings(db, row),
         version=row.version,
         created_at=row.created_at,
         updated_at=row.updated_at,
@@ -585,11 +629,11 @@ def list_operations(
     if date_to is not None:
         stmt = stmt.where(Operation.date <= date_to)
     rows = db.scalars(stmt.order_by(Operation.date.desc(), Operation.id.desc())).all()
-    return OperationListOut(operations=[_operation_out(row) for row in rows])
+    return OperationListOut(operations=[_operation_out(db, row) for row in rows])
 
 
 def get_operation(db: Session, user: AppUser, operation_id: uuid.UUID) -> OperationOut:
-    return _operation_out(_operation_or_404(db, user, operation_id))
+    return _operation_out(db, _operation_or_404(db, user, operation_id))
 
 
 def create_operation(
@@ -623,6 +667,9 @@ def create_operation(
     db.flush()
     _apply_products(row, paired, area)
     _apply_safety(row, safety)
+    if body.labour is not None:
+        row.workers_count = apply_operation_labour(db, row, body.labour)
+    apply_operation_machines(db, row, body.machines)
     _add_history(
         db,
         farm_id=farm.id,
@@ -630,11 +677,13 @@ def create_operation(
         entity_id=row.id,
         version=row.version,
         user=user,
-        changed=list(_OPERATION_FIELDS) + ["products", "safety"],
+        changed=list(_OPERATION_FIELDS) + ["products", "safety", "labour", "machines"],
         reason=None,
     )
+    db.flush()
+    publish("operation.logged", {"db": db, "operation_id": row.id})
     db.commit()
-    return _operation_out(_operation_or_404(db, user, row.id))
+    return _operation_out(db, _operation_or_404(db, user, row.id))
 
 
 def update_operation(
@@ -709,11 +758,22 @@ def update_operation(
     elif products_changed:
         _apply_safety(row, _default_safety(paired, None))
         safety_changed = True
+    labour_changed = "labour" in body.model_fields_set
+    if labour_changed:
+        # Clearing labour also clears its alias workers_count (D-079).
+        row.workers_count = apply_operation_labour(db, row, body.labour)
+    machines_changed = body.machines is not None
+    if body.machines is not None:
+        apply_operation_machines(db, row, body.machines)
     changed = [field for field in _OPERATION_FIELDS if getattr(row, field) != before[field]]
     if products_changed:
         changed.append("products")
     if safety_changed:
         changed.append("safety")
+    if labour_changed:
+        changed.append("labour")
+    if machines_changed:
+        changed.append("machines")
     row.version += 1
     row.updated_at = datetime.now(UTC)
     db.flush()
@@ -727,8 +787,10 @@ def update_operation(
         changed=changed,
         reason=_clean_reason(body.reason),
     )
+    db.flush()
+    publish("operation.logged", {"db": db, "operation_id": row.id})
     db.commit()
-    return _operation_out(_operation_or_404(db, user, row.id))
+    return _operation_out(db, _operation_or_404(db, user, row.id))
 
 
 def delete_operation(
@@ -752,6 +814,8 @@ def delete_operation(
         reason=_clean_reason(reason),
     )
     db.delete(row)
+    db.flush()
+    publish("operation.logged", {"db": db, "operation_id": operation_id})
     db.commit()
 
 
@@ -1000,6 +1064,8 @@ def list_journal(
                     link_id=row.id,
                     source="calculated",
                     operation_type=row.type,
+                    cost_dzd=_operation_cost_dzd(db, row.id),
+                    warnings=_operation_warnings(db, row),
                 )
             )
 

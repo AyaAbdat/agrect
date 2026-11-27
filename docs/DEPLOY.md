@@ -77,6 +77,8 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
 
    `SITE_ADDRESS` lists the names Caddy serves and certifies, separated by a comma and a space. `CORS_ORIGINS` is the same hosts with `https://`, separated by commas.
 
+   Set `JOBS_ENABLED=true` in `.env.prod` (the example already has it). The API then runs the background jobs: the hourly weather refresh, the nightly re-derive at 00:30 farm time, the history backfill at 03:00 and the maintenance count at 06:00. If the API runs several worker processes, a Postgres advisory lock lets only one of them run the jobs. On a server installed before this setting existed, add the line to `.env.prod` and restart the API. Check the last runs with `GET /v1/farms/{farm_id}/jobs/status`.
+
    Point an A record for `app.agrect.com` at this server. `13.140.215.136.sslip.io` needs no DNS record; it resolves to `13.140.215.136`.
 
 7. Start:

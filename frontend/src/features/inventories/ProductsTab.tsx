@@ -9,12 +9,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "../../app/auth"
 import { apiGet, apiSend } from "../../lib/api"
+import { ProductDrawer } from "../journal/ProductDrawer"
+import type { Product, ProductList } from "../journal/types"
 import { ConfirmDialog } from "../station/dialog"
-import { LoadError, PageHeader, PageSkeleton, cardClass, primaryBtn } from "../weather/ui"
-import { ProductDrawer } from "./ProductDrawer"
-import type { Product, ProductList } from "./types"
+import { LoadError, PageSkeleton, cardClass, outlineBtn, primaryBtn } from "../weather/ui"
 
-export function ProductsPage() {
+export function ProductsTab() {
   const { t } = useTranslation()
   const { currentFarmId } = useAuth()
   const queryClient = useQueryClient()
@@ -67,23 +67,18 @@ export function ProductsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader
-        crumb={t("settings.title")}
-        title={t("settings.inventories")}
-        sub={t("journal.productsSub")}
-        actions={
-          <button type="button" className={primaryBtn} onClick={openCreate}>
-            {t("journal.newProduct")}
-          </button>
-        }
-      />
+    <div className="flex flex-col gap-3">
+      <div className="flex justify-end">
+        <button type="button" className={primaryBtn} onClick={openCreate}>
+          {t("journal.newProduct")}
+        </button>
+      </div>
       <section className={cardClass}>
         {products.length === 0 ? (
           <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
             <p className="text-[16px] font-bold">{t("journal.productsEmptyTitle")}</p>
             <p className="max-w-[420px] text-[13px] text-mut">{t("journal.productsEmptyText")}</p>
-            <button type="button" className={primaryBtn} onClick={openCreate}>
+            <button type="button" className={outlineBtn} onClick={openCreate}>
               {t("journal.newProduct")}
             </button>
           </div>

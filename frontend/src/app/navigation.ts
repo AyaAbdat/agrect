@@ -10,9 +10,9 @@ export const farmNav: NavItem[] = [
   { to: "/today", labelKey: "nav.today", phase: "mvp" },
   { to: "/blocks", labelKey: "nav.blocks", phase: "mvp" },
   { to: "/station", labelKey: "nav.station", phase: "mvp" },
-  { to: "/season-timeline", labelKey: "nav.seasonTimeline", phase: "phase2" },
+  { to: "/season-timeline", labelKey: "nav.seasonTimeline", phase: "mvp" },
   { to: "/scores", labelKey: "nav.scores", phase: "phase2" },
-  { to: "/compare", labelKey: "nav.compare", phase: "phase2" },
+  { to: "/compare", labelKey: "nav.compare", phase: "mvp" },
   { to: "/dashboards", labelKey: "nav.dashboards", phase: "phase2" },
   { to: "/week-review", labelKey: "nav.weekReview", phase: "phase2" },
   { to: "/harvest", labelKey: "nav.harvest", phase: "mvp" },
@@ -31,7 +31,7 @@ export const blockNav: { segment: string; labelKey: string; phase: Phase }[] = [
 
 export const plansNav: NavItem[] = [
   { to: "/plans", labelKey: "nav.plans", phase: "phase2" },
-  { to: "/team", labelKey: "nav.team", phase: "phase2" },
+  { to: "/team", labelKey: "nav.team", phase: "mvp" },
 ]
 
 export const settingsNav = [

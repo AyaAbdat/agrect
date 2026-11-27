@@ -45,6 +45,7 @@ import {
 } from "../lib/units"
 import { asNumber } from "../features/weather/format"
 import type { NowOut } from "../features/weather/types"
+import { showChecklist } from "../features/today/checklistVisibility"
 
 const pillClass =
   "inline-flex h-9 shrink-0 items-center rounded-full px-3.5 text-[12px] font-semibold"
@@ -188,7 +189,7 @@ export function AppShell() {
             <NavLink
               key={item.to}
               to={item.to}
-              end
+              end={item.to !== "/team"}
               className={({ isActive }) => navItemClass(isActive)}
             >
               {t(item.labelKey)}
@@ -252,6 +253,16 @@ export function AppShell() {
               ))}
             </DropdownMenuRadioGroup>
             <DropdownMenuSeparator />
+            {currentFarmId !== null ? (
+              <DropdownMenuItem
+                onClick={() => {
+                  showChecklist(currentFarmId)
+                  if (pathname !== "/today") void navigate("/today")
+                }}
+              >
+                {t("menu.showChecklist")}
+              </DropdownMenuItem>
+            ) : null}
             {canInstall ? (
               <DropdownMenuItem onClick={install}>{t("menu.install")}</DropdownMenuItem>
             ) : null}

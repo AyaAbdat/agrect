@@ -47,6 +47,7 @@
     "fr": "Français",
     "ar": "العربية",
     "en": "English",
+    "showChecklist": "Afficher la liste de démarrage",
     "install": "Installer l'application",
     "logout": "Se déconnecter"
   },
@@ -486,6 +487,7 @@
     "alertsSub": "Avertissements de gel et de chaleur prévus, selon vos seuils",
     "frostLine": "Gel : {{hours}} h le {{date}}",
     "heatLine": "Chaleur : {{hours}} h le {{date}}",
+    "maintenanceDueLine": "{{machine}} : {{task}} à faire",
     "noWarnings": "Pas de gel ni de chaleur sur les 7 prochains jours",
     "setThresholds": "Définir les seuils de gel et de chaleur",
     "blocksSub": "Chaque bloc, ses chiffres et ses degrés-jours",
@@ -498,7 +500,49 @@
     "irrigateToday": "Irriguer aujourd'hui",
     "irrigateDose": "{{gross}} mm · {{hours}} h {{minutes}} min",
     "stageNow": "Stade actuel",
-    "next": "Suivant"
+    "next": "Suivant",
+    "checklist": {
+      "title": "Bien démarrer",
+      "sub": "Configurez votre ferme dans l'ordre. Chaque étape se coche automatiquement.",
+      "progress": "{{done}} sur {{total}}",
+      "open": "Ouvrir",
+      "hide": "Masquer",
+      "stepError": "Impossible de vérifier cette étape.",
+      "steps": {
+        "location": {
+          "title": "Position de la ferme définie",
+          "why": "Indiquez les coordonnées et le fuseau horaire pour la météo locale."
+        },
+        "block": {
+          "title": "Premier bloc complété",
+          "why": "Dessinez un bloc et complétez la plantation et l'irrigation."
+        },
+        "weather": {
+          "title": "Météo chargée",
+          "why": "Vérifiez que la météo en direct et les prévisions arrivent pour votre ferme."
+        },
+        "gdd": {
+          "title": "Réglages degrés-jours pour chaque culture",
+          "why": "Définissez les températures de base et plafond pour chaque culture utilisée."
+        },
+        "thresholds": {
+          "title": "Seuils de gel et de chaleur",
+          "why": "Définissez les limites d'alerte pour afficher les avis de gel et de chaleur."
+        },
+        "soil": {
+          "title": "Sol et réglages d'irrigation",
+          "why": "Ajoutez la texture du sol, le Kc et l'efficience pour chaque bloc complet."
+        },
+        "station": {
+          "title": "Station de fertigation",
+          "why": "Ajoutez au moins une pompe pour vérifier la capacité et les postes."
+        },
+        "prices": {
+          "title": "Prix des produits utilisés",
+          "why": "Ajoutez les prix unitaires pour que les coûts par bloc soient complets."
+        }
+      }
+    }
   },
   "soil": {
     "crumb": "Blocs › {{block}}",
@@ -716,7 +760,8 @@
     "missing": "—",
     "loading": "Chargement…",
     "loadError": "Impossible de charger vos données.",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "dzd": "DZD"
   },
   "stages": {
     "crumbBlock": "Blocs › {{block}}",
@@ -872,9 +917,8 @@
     "openJournal": "Ouvrir le journal",
     "reentryLine": "Non-réentrée jusqu'à {{until}} ({{product}})",
     "planTitle": "Prévu et réalisé",
-    "planWater": "Eau",
-    "planSoil": "Sol",
-    "planCrop": "Culture"
+    "planCrop": "Culture",
+    "costTile": "Coût cette saison"
   },
   "harvest": {
     "sub": "Enregistrement et prévision",
@@ -1117,7 +1161,85 @@
       "netArea": "Ce bloc doit avoir une surface plantée nette.",
       "missing": "Introuvable.",
       "conflict": "Modification ailleurs. Rechargez et réessayez.",
+      "labourHeadcount": "Indiquez un nombre d'ouvriers valide.",
+      "labourWorkersRequired": "Sélectionnez des ouvriers ou indiquez un effectif.",
+      "labourWorkerNotInFarm": "Cet ouvrier n'appartient pas à cette ferme.",
+      "labourHours": "Indiquez un nombre d'heures valide (0 ou plus).",
+      "machineMissing": "Choisissez une machine.",
+      "machineDuplicate": "Chaque machine ne peut être ajoutée qu'une fois.",
+      "machineNotInFarm": "Cette machine n'appartient pas à cette ferme.",
+      "machineHours": "Indiquez un nombre d'heures machine positif.",
+      "machineFuel": "Indiquez un volume de carburant valide en litres (0 ou plus).",
       "save": "Enregistrement impossible. Réessayez."
+    },
+    "unitMismatch": "{{product}} : l'unité ne correspond pas au produit — non comptée en stock ni en coût",
+    "workerInactive": "{{worker}} : cet ouvrier est marqué inactif.",
+    "workerInactiveGeneric": "Un ou plusieurs ouvriers sélectionnés sont marqués inactifs.",
+    "machineInRepair": "{{machine}} : cette machine est marquée en réparation.",
+    "machineInRepairGeneric": "Une ou plusieurs machines sélectionnées sont marquées en réparation.",
+    "machinesSection": "Machines",
+    "machinesEmpty": "Aucune machine. Ajoutez des machines dans Équipe.",
+    "machine": "Machine",
+    "chooseMachine": "Choisir une machine",
+    "machineHours": "Heures",
+    "machineFuel": "Carburant (L)",
+    "addMachine": "Ajouter une machine",
+    "removeMachine": "Retirer la machine",
+    "machineWorkRateTitle": "Débit de chantier",
+    "machineDetails": "{{machine}} {{hours}} h",
+    "machineDetailsFuel": "{{machine}} {{hours}} h · {{fuel}} L",
+    "labourSection": "Main-d'œuvre",
+    "labourModeWorkers": "Sélectionner des ouvriers",
+    "labourModeHeadcount": "Effectif",
+    "labourHeadcount": "Effectif",
+    "labourHoursEach": "Heures par ouvrier",
+    "labourNoWorkers": "Aucun ouvrier. Ajoutez des ouvriers dans Équipe ou saisissez un effectif.",
+    "labourPreview": "{{count}} × {{hours}} h",
+    "labourTotal": "{{total}} h",
+    "labourDetails": "{{count}} ouvriers · {{hours}} h",
+    "print": {
+      "drawerTitle": "Exporter (PDF)",
+      "period": "Période",
+      "from": "Du",
+      "to": "Au",
+      "include": "Inclure",
+      "includeOperations": "Opérations",
+      "includeIrrigations": "Irrigations",
+      "includeHarvests": "Récoltes",
+      "includeStages": "Stades",
+      "language": "Langue",
+      "langFr": "Français",
+      "langAr": "العربية",
+      "langEn": "English",
+      "openPrintView": "Ouvrir l'aperçu d'impression",
+      "selectOneType": "Sélectionnez au moins un type d'entrée.",
+      "invalidPeriod": "La date de début doit précéder ou égaler la date de fin.",
+      "docTitle": "Journal de parcelle",
+      "farm": "Ferme",
+      "block": "Parcelle",
+      "generatedAt": "Généré le",
+      "periodLabel": "Période",
+      "periodRange": "{{from}} – {{to}}",
+      "fromOnly": "À partir du {{from}}",
+      "toOnly": "Jusqu'au {{to}}",
+      "allDates": "Toutes les dates",
+      "areaHa": "{{area}} ha",
+      "printButton": "Imprimer / Enregistrer en PDF",
+      "back": "Retour",
+      "colDate": "Date",
+      "colType": "Type",
+      "colDetails": "Détails",
+      "colPhi": "Délai avant récolte",
+      "colCost": "Coût (DZD)",
+      "colSource": "Source",
+      "phiCell": "{{days}} jours → {{date}}",
+      "waterM3Ha": "{{m3}} m³/ha",
+      "irrigationLine": "Durée {{duration}} · {{depth}} mm · {{volume}} m³",
+      "harvestLine": "Passage {{pass}} · {{kg}} kg · {{kgHa}} kg/ha",
+      "stageLine": "{{name}} ({{code}}) — observé",
+      "stageFallback": "{{title}} — observé",
+      "empty": "Aucune entrée sur cette période.",
+      "footerNote": "Les valeurs marquées Calculé sont calculées par AGRECT à partir des données saisies. Généré depuis https://app.agrect.com."
     }
   },
   "station": {
@@ -1244,6 +1366,376 @@
       "conflict": "Ceci a été modifié ailleurs. Rechargez et réessayez.",
       "save": "Enregistrement impossible. Réessayez.",
       "delete": "Suppression impossible. Réessayez."
+    }
+  },
+  "costs": {
+    "title": "Coûts",
+    "farmTitle": "Coûts de l'exploitation",
+    "blockTitle": "Coûts de la parcelle",
+    "sub": "Coût de chaque opération et parcelle cette saison",
+    "season": "Saison",
+    "farmTotal": "Total exploitation",
+    "perHa": "DZD/ha",
+    "block": "Parcelle",
+    "total": "Total",
+    "products": "Produits",
+    "water": "Eau",
+    "bySource": "Par source",
+    "byOperation": "Par opération",
+    "missingTitle": "Produits utilisés sans prix",
+    "missingLink": "Définir les prix",
+    "unitsTitle": "Unités à vérifier",
+    "unitsRow": "{{product}} : saisi en {{op}}, le produit est en {{prod}}",
+    "openInJournal": "Ouvrir le journal",
+    "empty": "Aucun coût pour l'instant",
+    "allBlocks": "Toutes les parcelles",
+    "sources": {
+      "product": "Produits",
+      "water": "Eau",
+      "labour": "Main-d'œuvre",
+      "machine": "Machine",
+      "fuel": "Carburant",
+      "energy": "Énergie"
+    },
+    "missingResource": {
+      "labour_h": "Main-d'œuvre (h)",
+      "machine_h": "Machine (h)",
+      "fuel_l": "Carburant (L)",
+      "water_m3": "Eau (m³)",
+      "energy_kwh": "Énergie (kWh)"
+    }
+  },
+  "inventories": {
+    "sub": "Produits, stock et prix",
+    "openCosts": "Voir les coûts",
+    "date": "Date",
+    "selectProduct": "Choisir un produit",
+    "tabs": {
+      "products": "Produits",
+      "stock": "Stock",
+      "prices": "Prix"
+    },
+    "kinds": {
+      "purchase": "Achat",
+      "use": "Utilisation",
+      "adjustment": "Ajustement"
+    },
+    "stock": {
+      "product": "Produit",
+      "onHand": "En stock",
+      "uses": "Utilisations cette saison",
+      "lastPurchase": "Dernier achat",
+      "recordPurchase": "Enregistrer un achat",
+      "adjust": "Ajuster le stock",
+      "empty": "Aucun stock pour l'instant",
+      "mismatchTip": "Certaines saisies utilisent une unité incompatible avec ce produit ; vérifiez le journal.",
+      "mismatchBadge": "{{count}} à vérifier",
+      "movesTitle": "Mouvements de stock",
+      "noMoves": "Aucun mouvement de stock",
+      "kind": "Type",
+      "quantity": "Quantité",
+      "fromOperation": "Issu d'une opération",
+      "deleteTitle": "Supprimer le mouvement ?",
+      "deleteText": "Ce mouvement de stock sera supprimé."
+    },
+    "purchase": {
+      "title": "Enregistrer un achat",
+      "quantity": "Quantité ({{unit}})",
+      "unitPrice": "Prix unitaire (DZD, facultatif)",
+      "unitPriceHint": "Si renseigné, un prix valable à partir de cette date est aussi créé."
+    },
+    "adjust": {
+      "title": "Ajuster le stock",
+      "quantity": "Quantité (+/-)",
+      "note": "Motif"
+    },
+    "prices": {
+      "products": "Produits",
+      "resources": "Ressources",
+      "perUnit": "DZD par unité",
+      "validFrom": "Valable à partir du",
+      "from": "à partir du",
+      "note": "Note",
+      "history": "Historique",
+      "add": "Ajouter un prix",
+      "empty": "Aucun prix pour l'instant",
+      "usedLater": "Utilisé plus tard",
+      "reason": "Motif du changement",
+      "reasonHint": "Les prix modifient les coûts passés ; un motif est requis.",
+      "deleteTitle": "Supprimer le prix ?",
+      "deleteText": "Les coûts utilisant ce prix seront recalculés."
+    },
+    "priceDrawer": {
+      "title": "Ajouter un prix",
+      "editTitle": "Modifier le prix"
+    },
+    "resources": {
+      "water_m3": "Eau (DZD/m³)",
+      "labour_h": "Main-d'œuvre (DZD/h)",
+      "machine_h": "Machine (DZD/h)",
+      "fuel_l": "Carburant (DZD/L)",
+      "energy_kwh": "Énergie (DZD/kWh)"
+    },
+    "errors": {
+      "price": "Saisissez un prix supérieur à zéro",
+      "product": "Choisissez un produit",
+      "kind": "Seuls les achats ou ajustements peuvent être ajoutés",
+      "quantity": "Saisissez une quantité supérieure à zéro",
+      "adjustQuantity": "Saisissez une quantité non nulle",
+      "reason": "Un motif est requis",
+      "conflict": "Cet enregistrement a changé ; rechargez et réessayez",
+      "useDelete": "Les utilisations proviennent des opérations et ne peuvent pas être supprimées ici",
+      "missing": "Introuvable",
+      "save": "Enregistrement impossible, réessayez"
+    }
+  },
+  "team": {
+    "title": "Équipe",
+    "sub": "Ouvriers, présence, normes de main-d'œuvre et machines",
+    "tabs": {
+      "workers": "Ouvriers",
+      "attendance": "Présence",
+      "norms": "Normes de main-d'œuvre",
+      "machines": "Machines"
+    },
+    "roles": {
+      "farm_manager": "Chef d'exploitation",
+      "agronomist": "Agronome",
+      "irrigation_lead": "Responsable irrigation",
+      "scout": "Observateur",
+      "operator": "Ouvrier / Opérateur",
+      "owner": "Propriétaire",
+      "other": "Autre"
+    },
+    "kinds": {
+      "permanent": "Permanent",
+      "seasonal": "Saisonnier"
+    },
+    "workers": {
+      "add": "Ajouter un ouvrier",
+      "addTitle": "Nouvel ouvrier",
+      "editTitle": "Modifier l'ouvrier",
+      "emptyTitle": "Aucun ouvrier",
+      "emptyText": "Ajoutez les ouvriers permanents ou saisonniers pour suivre la présence et les heures par opération.",
+      "name": "Nom",
+      "role": "Rôle",
+      "draftList": "Liste provisoire",
+      "kind": "Type",
+      "phone": "Téléphone",
+      "active": "Actif",
+      "activeHint": "Les ouvriers inactifs restent dans l'historique et apparaissent grisés lors de la saisie.",
+      "statusActive": "Actif",
+      "statusInactive": "Inactif",
+      "deleteTitle": "Supprimer cet ouvrier ?",
+      "deleteText": "{{name}} sera retiré de l'équipe.",
+      "inUseText": "Cet ouvrier est lié à des opérations. Marquez-le plutôt comme inactif.",
+      "markInactive": "Marquer inactif"
+    },
+    "attendance": {
+      "dailyTitle": "Présence du jour",
+      "date": "Date",
+      "noActiveWorkers": "Aucun ouvrier actif. Ajoutez d'abord des ouvriers dans l'onglet Ouvriers.",
+      "present": "Présent",
+      "presentYes": "Présent",
+      "presentNo": "Absent",
+      "hours": "Heures",
+      "hoursPlaceholder": "Optionnel",
+      "note": "Note",
+      "notePlaceholder": "Note optionnelle",
+      "save": "Enregistrer la présence",
+      "saved": "Présence enregistrée.",
+      "summaryTitle": "Récapitulatif de présence",
+      "from": "Du",
+      "to": "Au",
+      "summaryEmpty": "Aucun ouvrier à résumer.",
+      "daysPresent": "Jours présent"
+    },
+    "norms": {
+      "operationType": "Type d'opération",
+      "crop": "Culture",
+      "operations": "Opérations",
+      "hours": "Heures",
+      "areaHa": "Surface (ha)",
+      "hPerHa": "h/ha",
+      "empty": "Les normes de main-d'œuvre apparaissent dès que des heures sont enregistrées sur les opérations."
+    },
+    "machines": {
+      "add": "Ajouter une machine",
+      "addTitle": "Nouvelle machine",
+      "editTitle": "Modifier la machine",
+      "emptyTitle": "Aucune machine",
+      "emptyText": "Ajoutez vos tracteurs, pulvérisateurs ou moissonneuses pour suivre les heures moteur, le carburant, le débit de chantier et l'entretien.",
+      "backToMachines": "← Retour aux machines",
+      "name": "Nom",
+      "type": "Type",
+      "status": "Statut",
+      "engineHours": "Heures moteur",
+      "engineHoursReading": "Relevé heures moteur",
+      "readingDate": "Date du relevé",
+      "currentEngineHours": "Heures moteur (actuelles)",
+      "lastReadingLine": "Dernier relevé : {{hours}} h le {{date}}",
+      "nextMaintenance": "Prochain entretien",
+      "usesThisSeason": "Utilisations cette saison ({{season}})",
+      "hours": "Heures",
+      "fuel": "Carburant",
+      "area": "Surface",
+      "avgWorkRate": "Débit de chantier moyen",
+      "hoursValue": "{{hours}} h",
+      "daysValue": "{{days}} jours",
+      "litersValue": "{{liters}} L",
+      "areaValue": "{{area}} ha",
+      "workRateValue": "{{rate}} ha/h",
+      "inRepairLower": "en réparation",
+      "deleteTitle": "Supprimer cette machine ?",
+      "deleteText": "{{name}} sera retirée de votre ferme.",
+      "types": {
+        "tractor": "Tracteur",
+        "sprayer": "Pulvérisateur",
+        "combine": "Moissonneuse",
+        "other": "Autre"
+      },
+      "statuses": {
+        "ok": "OK",
+        "repair": "En réparation"
+      },
+      "maintenance": {
+        "title": "Entretien",
+        "add": "Ajouter un entretien",
+        "addTitle": "Nouvelle tâche d'entretien",
+        "editTitle": "Modifier l'entretien",
+        "emptyTitle": "Aucun entretien programmé",
+        "emptyText": "Définissez des intervalles en heures ou en jours pour être averti quand l'entretien arrive à échéance.",
+        "task": "Tâche",
+        "interval": "Intervalle",
+        "intervalHint": "Indiquez au moins un intervalle (heures et/ou jours).",
+        "intervalHours": "Toutes les (heures)",
+        "intervalDays": "Tous les (jours)",
+        "lastDone": "Dernier entretien",
+        "lastDoneDate": "Date du dernier entretien",
+        "lastDoneHours": "Heures moteur du dernier entretien",
+        "nextDue": "Prochaine échéance",
+        "every": "Tous les {{interval}}",
+        "statusOk": "OK",
+        "statusDue": "À faire",
+        "statusOverdue": "En retard",
+        "statusNeverDone": "Jamais fait — saisir la dernière fois",
+        "markDone": "Marquer fait",
+        "markDoneTitle": "Marquer l'entretien comme fait",
+        "deleteTitle": "Supprimer cet entretien ?",
+        "deleteText": "{{task}} sera retiré de cette machine."
+      },
+      "errors": {
+        "nameRequired": "Indiquez le nom de la machine.",
+        "nameTaken": "Ce nom de machine est déjà utilisé.",
+        "inUse": "Cette machine est liée à des opérations et ne peut pas être supprimée.",
+        "hoursInvalid": "Indiquez des heures moteur valides (0 ou plus).",
+        "taskRequired": "Indiquez une tâche d'entretien.",
+        "intervalRequired": "Indiquez un intervalle en heures ou en jours.",
+        "intervalInvalid": "Indiquez un intervalle supérieur à zéro.",
+        "notFound": "Machine introuvable.",
+        "maintenanceNotFound": "Tâche d'entretien introuvable."
+      }
+    },
+    "errors": {
+      "nameRequired": "Indiquez le nom de l'ouvrier.",
+      "nameTaken": "Ce nom d'ouvrier est déjà utilisé.",
+      "workerInUse": "Cet ouvrier est lié à des opérations. Marquez-le plutôt comme inactif.",
+      "workerNotInFarm": "Cet ouvrier n'appartient pas à votre ferme.",
+      "hoursInvalid": "Indiquez un nombre d'heures valide (0 ou plus).",
+      "rangeInvalid": "La date de fin doit être postérieure ou égale à la date de début.",
+      "notFound": "Ouvrier introuvable.",
+      "conflict": "Cet enregistrement a changé ailleurs. Rechargez et réessayez.",
+      "save": "Enregistrement impossible. Réessayez."
+    }
+  },
+  "farmDetails": {
+    "sub": "Nom de la ferme, emplacement, fuseau horaire et source météo",
+    "nameLabel": "Nom de la ferme",
+    "renameNote": "Le renommage viendra plus tard",
+    "locationLabel": "Emplacement",
+    "mapHint": "Déplacez le repère ou cliquez sur la carte, ou saisissez les coordonnées ci-dessous (6 décimales).",
+    "latLabel": "Latitude",
+    "lonLabel": "Longitude",
+    "timezoneLabel": "Fuseau horaire",
+    "weatherSourceLabel": "Source météo",
+    "weatherService": "Service météo (Open-Meteo)",
+    "weatherStation": "Station — Phase 2",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saved": "Emplacement enregistré. La météo va s'actualiser pour ce nouvel emplacement.",
+    "errors": {
+      "latRequired": "Indiquez une latitude.",
+      "lonRequired": "Indiquez une longitude.",
+      "number": "Indiquez un nombre valide.",
+      "latOutOfRange": "La latitude doit être comprise entre -90 et 90.",
+      "lonOutOfRange": "La longitude doit être comprise entre -180 et 180.",
+      "timezoneInvalid": "Choisissez un fuseau horaire IANA valide.",
+      "stationNotSupported": "La station météo arrive en phase 2.",
+      "save": "Enregistrement impossible. Réessayez."
+    }
+  },
+  "timeline": {
+    "sub": "Une ligne par parcelle, par semaine",
+    "thisSeason": "Cette saison",
+    "twoSeasons": "Deux saisons",
+    "addCrop": "Ajouter une culture",
+    "addCropHint": "Une seule culture par parcelle pour l'instant. Le multi-culture arrive en phase 2.",
+    "phase2": "Phase 2",
+    "colBlock": "Parcelle",
+    "today": "Aujourd'hui",
+    "partialWarning": "Certaines données de parcelles n'ont pas pu être chargées. Affichage des données disponibles.",
+    "partialRowWarning": "Certaines données de cette parcelle n'ont pas pu être chargées.",
+    "emptyTitle": "Aucune culture sur la frise pour l'instant",
+    "emptyText": "Chaque parcelle a une barre par culture, colorée par culture, plus claire avant la première récolte, avec une ligne Aujourd'hui.",
+    "legend": {
+      "preHarvest": "Avant récolte",
+      "harvested": "Récoltée",
+      "stage": "Stade confirmé",
+      "harvest": "Passage de récolte",
+      "irrigation": "Irrigations (par semaine)",
+      "operations": "Opérations",
+      "opNutrition": "Fertigation / Nutrition",
+      "opProtection": "Protection phytosanitaire",
+      "opFoliar": "Foliaire / Croissance",
+      "opCanopy": "Canopée / Taille",
+      "opOther": "Autre"
+    },
+    "tooltip": {
+      "harvestPass": "Récolte passage n°{{pass}}",
+      "irrigationWeek": "Semaine {{week}} ({{year}})",
+      "irrigationCount": "{{count}} irrigation(s)"
+    }
+  },
+  "compare": {
+    "title": "Comparer les parcelles",
+    "sub": "Une valeur sur toutes les parcelles · hier",
+    "phase2": "Phase 2",
+    "metrics": {
+      "waterLeft": "Eau restante",
+      "waterApplied": "Eau apportée",
+      "cropWaterUse": "Eau consommée",
+      "degreeDays": "Degrés-jours",
+      "pestCount": "Ravageurs",
+      "stage": "Stade"
+    },
+    "yesterday": "Hier",
+    "colBlock": "Parcelle",
+    "colValue": "Valeur",
+    "colPlan": "Plan",
+    "colMean7d": "Moyenne 7 j",
+    "notEnoughData": "Données insuffisantes",
+    "emptyTitle": "Rien à comparer pour l'instant",
+    "emptyText": "La comparaison commence dès que deux parcelles ou plus envoient des données.",
+    "driftTitle": "Même réglage, résultat différent",
+    "driftSub": "Quand des parcelles avec le même plan divergent, AGRECT le signale ici.",
+    "nothingFlagged": "Rien à signaler",
+    "flags": {
+      "driftSameSetting": "L'eau restante s'écarte des autres parcelles ayant la même culture et le même réglage d'irrigation.",
+      "generic": "Écart détecté entre des parcelles ayant le même réglage."
+    },
+    "units": {
+      "mm": "mm",
+      "degcDay": "°C·jour"
     }
   }
 }

@@ -1,5 +1,6 @@
 """Import every module's models here so Alembic autogenerate sees them."""
 
+from app.jobs.models import JobRun
 from app.modules.auth.models import AppUser
 from app.modules.catalog.models import (
     Crop,
@@ -12,8 +13,11 @@ from app.modules.catalog.models import (
     Variety,
     VarietyChill,
 )
+from app.modules.equipment.models import Machine, MachineUse, Maintenance
 from app.modules.farms.models import Farm
 from app.modules.harvest.models import HarvestEntry, HarvestQuality
+from app.modules.inputs.models import CostLine, Price, StockMove
+from app.modules.labour.models import Attendance, LabourLog, Worker
 from app.modules.operations.models import (
     Operation,
     OperationProduct,
@@ -48,9 +52,11 @@ from app.modules.weather.models import (
 
 __all__ = [
     "AppUser",
+    "Attendance",
     "Block",
     "BlockSeason",
     "CapacityDecision",
+    "CostLine",
     "Crop",
     "CropScale",
     "Farm",
@@ -64,10 +70,16 @@ __all__ = [
     "IrrigationEvent",
     "IrrigationLayout",
     "IrrigationSettings",
+    "JobRun",
+    "LabourLog",
+    "Machine",
+    "MachineUse",
+    "Maintenance",
     "Operation",
     "OperationProduct",
     "OperationSafety",
     "Planting",
+    "Price",
     "Product",
     "Pump",
     "PumpBlock",
@@ -81,11 +93,13 @@ __all__ = [
     "Station",
     "StageObservation",
     "StagePrediction",
+    "StockMove",
     "TrainingSystem",
     "Valve",
     "Variety",
     "VarietyChill",
     "WaterSource",
+    "Worker",
     "WaterBalanceDaily",
     "WeatherDaily",
     "WeatherHourly",

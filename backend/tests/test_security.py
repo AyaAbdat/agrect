@@ -2,10 +2,17 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 import jwt
+import pytest
+from argon2 import PasswordHasher
 from fastapi.testclient import TestClient
 
 from app.core.config import get_settings
-from app.core.security import create_access_token, hash_password, verify_password
+from app.core.security import (
+    _make_hasher,
+    create_access_token,
+    hash_password,
+    verify_password,
+)
 
 
 def test_hash_round_trip() -> None:
@@ -16,6 +23,20 @@ def test_hash_round_trip() -> None:
 
 def test_wrong_password_fails() -> None:
     password_hash = hash_password("correct-horse")
+    assert not verify_password("wrong-horse", password_hash)
+
+
+def test_production_hasher_keeps_argon2_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without TEST_FAST_HASH the hasher is argon2's default cost (tests use a cheap one)."""
+    monkeypatch.delenv("TEST_FAST_HASH", raising=False)
+    production = _make_hasher()
+    default = PasswordHasher()
+    assert production.time_cost == default.time_cost
+    assert production.memory_cost == default.memory_cost
+    assert production.parallelism == default.parallelism
+    password_hash = production.hash("correct-horse")
+    assert f"m={default.memory_cost},t={default.time_cost},p={default.parallelism}" in password_hash
+    assert verify_password("correct-horse", password_hash)
     assert not verify_password("wrong-horse", password_hash)
 
 
